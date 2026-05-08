@@ -81,7 +81,7 @@ export const Shop: React.FC = () => {
                 if (categoryFilter) setSearchParams({});
                 else alert('Filters are contextually applied via categories in the navigation.');
               }}
-              className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group"
+              className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group rounded-full"
             >
               <SlidersHorizontal className="w-4 h-4 opacity-40 group-hover:opacity-100" />
               {categoryFilter ? 'Clear Filter' : 'Filter'}
@@ -89,7 +89,7 @@ export const Shop: React.FC = () => {
             <div className="relative">
               <button 
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
-                className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group min-w-[140px] justify-between"
+                className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group min-w-[140px] justify-between rounded-full"
               >
                 <span>
                   {sortBy === 'newest' ? 'Newest' : sortBy === 'price-asc' ? 'Price: Low' : 'Price: High'}

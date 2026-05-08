@@ -28,7 +28,8 @@
   --spacing-stack-md: 24px;
   --spacing-stack-lg: 48px;
 
-  --radius-bento: 0px;
+  --radius-luxury: 24px;
+  --radius-bento: 24px;
 }
 
 @layer base {
@@ -39,10 +40,10 @@
 
 @layer utilities {
   .luxury-border {
-    @apply border border-on-background/10;
+    @apply border border-on-background/10 rounded-[var(--radius-luxury)];
   }
   .luxury-card {
-    @apply bg-surface border border-on-background/5 p-8 transition-all duration-500 hover:border-on-background/20;
+    @apply bg-surface border border-on-background/5 p-8 transition-all duration-500 hover:border-on-background/20 rounded-[var(--radius-luxury)];
   }
   .luxury-line {
     @apply h-px w-full bg-on-background/10;

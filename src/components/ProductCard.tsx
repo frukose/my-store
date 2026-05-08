@@ -15,10 +15,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group flex flex-col h-full bg-surface"
+      className="group flex flex-col h-full bg-surface rounded-[var(--radius-luxury)] overflow-hidden"
     >
-      <Link to={`/product/${product.id}`} className="flex flex-col h-full space-y-6">
-        <div className="aspect-[3/4] overflow-hidden bg-background relative luxury-border">
+      <Link to={`/product/${product.id}`} className="flex flex-col h-full">
+        <div className="aspect-[3/4] overflow-hidden bg-background relative rounded-[var(--radius-luxury)] luxury-border">
           <img
             src={product.images[0] || 'https://via.placeholder.com/400x500?text=No+Image'}
             alt={product.name}
@@ -35,16 +35,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             />
           )}
           {product.videos && product.videos.length > 0 && (
-            <div className="absolute top-4 right-4 bg-background/80 px-2 py-1 luxury-border font-label-md text-[8px] flex items-center gap-1">
+            <div className="absolute top-4 right-4 bg-background/80 px-2 py-1 luxury-border font-label-md text-[8px] flex items-center gap-1 backdrop-blur-sm">
               <Activity className="w-3 h-3" />
             </div>
           )}
           {product.isNewArrival && (
-            <span className="absolute top-4 left-4 bg-background px-4 py-1.5 luxury-border font-label-md text-[9px]">New Arrival</span>
+            <span className="absolute top-4 left-4 bg-background px-4 py-1.5 luxury-border font-label-md text-[9px] backdrop-blur-sm">New Arrival</span>
           )}
         </div>
         
-            <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-4 p-6">
           <div className="space-y-1">
             <span className="font-label-md text-[9px] text-secondary lowercase italic opacity-60 tracking-widest">
               {typeof product.category === 'object' ? (product.category as any)?.name || 'Shop Object' : product.category}
@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           <div className="flex justify-between items-end">
             <span className="font-sans text-lg font-light tracking-tight">₦{product.price.toLocaleString()}</span>
-            <div className="w-8 h-8 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all overflow-hidden relative">
+            <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all overflow-hidden relative">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>

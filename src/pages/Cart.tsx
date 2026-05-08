@@ -83,7 +83,7 @@ export const Cart: React.FC = () => {
           <h2 className="font-display-md text-5xl">Your bag is currently empty</h2>
           <p className="font-body-lg text-secondary italic">A curated selection of atelier objects awaits your exploration.</p>
         </div>
-        <Link to="/shop" className="bg-primary text-white px-16 py-5 font-label-md hover:bg-accent transition-all duration-500">
+        <Link to="/shop" className="bg-primary text-white px-16 py-5 font-label-md hover:bg-accent transition-all duration-500 rounded-full">
           Discover Collection
         </Link>
       </div>
@@ -138,7 +138,7 @@ export const Cart: React.FC = () => {
                 </div>
                 
                 <div className="flex justify-between items-end mt-8">
-                  <div className="flex items-center luxury-border px-4 py-2 gap-6">
+                  <div className="flex items-center luxury-border px-4 py-2 gap-6 rounded-full">
                     <button onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))} className="hover:text-accent"><Minus className="w-4 h-4" /></button>
                     <span className="font-label-md w-6 text-center">{item.quantity}</span>
                     <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="hover:text-accent"><Plus className="w-4 h-4" /></button>
@@ -181,7 +181,7 @@ export const Cart: React.FC = () => {
             <div className="space-y-6">
               <button 
                 onClick={handleWhatsAppCheckout}
-                className="w-full bg-primary text-white py-6 font-label-md text-xs tracking-[0.3em] hover:bg-accent transition-all duration-500"
+                className="w-full bg-primary text-white py-6 font-label-md text-xs tracking-[0.3em] hover:bg-accent transition-all duration-500 rounded-full"
               >
                 Checkout on WhatsApp
               </button>
