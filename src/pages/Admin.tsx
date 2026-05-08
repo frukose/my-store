@@ -37,6 +37,18 @@ export const Admin: React.FC = () => {
     accentColor: '#C5A059',
   });
 
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    id: '',
+    name: '',
+    price: '',
+    category: 'Suits',
+    description: '',
+    images: [''],
+    sizes: ['M', 'L', 'XL'],
+    stock_level: 10
+  });
+
   useEffect(() => {
     fetchSiteSettings();
     fetchActivities();
@@ -49,15 +61,21 @@ export const Admin: React.FC = () => {
       .select('*')
       .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error('Fetch error:', error);
+      return;
+    }
+
     if (data && data.length > 0) {
       setDbProducts(data);
     } else {
-      // Seed from constants if empty
-      await seedProducts();
+      // Auto-seed only if completely empty and no error
+      if (data && data.length === 0) await seedProducts();
     }
   };
 
   const seedProducts = async () => {
+    setIsLoading(true);
     const productsToSeed = PRODUCTS.map(p => ({
       id: p.id,
       name: p.name,
@@ -69,11 +87,48 @@ export const Admin: React.FC = () => {
       stock_level: p.stockCount || 10
     }));
 
-    const { error } = await supabase.from('products').insert(productsToSeed);
+    const { error } = await supabase.from('products').upsert(productsToSeed);
     if (!error) {
       const { data } = await supabase.from('products').select('*');
       if (data) setDbProducts(data);
+      alert('Archive seeded successfully.');
+    } else {
+      alert('Seed error: ' + error.message);
     }
+    setIsLoading(false);
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Generate a reference ID if none provided
+    const productId = newProduct.id || `PIECE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    
+    const { error } = await supabase.from('products').insert([{
+      ...newProduct,
+      id: productId,
+      price: newProduct.price.toString(),
+    }]);
+
+    if (!error) {
+      alert('New archival piece added.');
+      setShowAddModal(false);
+      setNewProduct({
+        id: '',
+        name: '',
+        price: '',
+        category: 'Suits',
+        description: '',
+        images: [''],
+        sizes: ['M', 'L', 'XL'],
+        stock_level: 10
+      });
+      fetchProducts();
+    } else {
+      alert('Error adding piece: ' + error.message);
+    }
+    setIsLoading(false);
   };
 
   const fetchSiteSettings = async () => {
@@ -275,7 +330,10 @@ export const Admin: React.FC = () => {
           </div>
           
           <div className="flex gap-4">
-            <button className=" luxury-border px-8 py-4 font-label-md text-[10px] bg-primary text-white hover:bg-accent transition-all duration-500 flex items-center gap-3">
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className=" luxury-border px-8 py-4 font-label-md text-[10px] bg-primary text-white hover:bg-accent transition-all duration-500 flex items-center gap-3"
+            >
               <Plus className="w-4 h-4" />
               New Collection Object
             </button>
@@ -663,8 +721,143 @@ export const Admin: React.FC = () => {
                   )}
                 </button>
               </div>
+
+              <div className="luxury-card space-y-8">
+                <h3 className="font-label-md text-red-500 italic">Clinical Database Tools</h3>
+                <p className="text-xs font-sans opacity-60">Use these only if the archive becomes out of sync or empty. Seeding will attempt to restore missing defaults.</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <button 
+                    onClick={seedProducts}
+                    disabled={isLoading}
+                    className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RE-SEED CORE ARCHIVE'}
+                  </button>
+                  <button 
+                    onClick={() => { fetchProducts(); fetchActivities(); fetchSiteSettings(); }}
+                    className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest hover:bg-accent hover:text-white transition-all"
+                  >
+                    FORCE REFRESH METRICS
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Product Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddModal(false)}
+              className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="luxury-card w-full max-w-2xl relative z-10 bg-white max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <h2 className="font-display-md text-3xl italic">New Archive Entry</h2>
+                <button onClick={() => setShowAddModal(false)} className="p-2 opacity-40 hover:opacity-100 transition-opacity">
+                  <Plus className="w-6 h-6 rotate-45" />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddProduct} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Reference SKU (Optional)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. PIECE-001"
+                      value={newProduct.id}
+                      onChange={(e) => setNewProduct({...newProduct, id: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-mono text-xs uppercase"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Display Name</label>
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="e.g. Structured Silk Blazer"
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-serif italic text-lg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Price (NGN)</label>
+                    <input 
+                      required
+                      type="number" 
+                      placeholder="e.g. 150000"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-serif italic text-lg"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Category</label>
+                    <select 
+                      value={newProduct.category}
+                      onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-label-md text-[10px] appearance-none"
+                    >
+                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-label-md text-[9px] opacity-40">Archival Image URL</label>
+                  <input 
+                    required
+                    type="url" 
+                    placeholder="https://images.unsplash.com/..."
+                    value={newProduct.images[0]}
+                    onChange={(e) => setNewProduct({...newProduct, images: [e.target.value]})}
+                    className="w-full bg-background/50 luxury-border px-6 py-4 font-mono text-[10px]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="font-label-md text-[9px] opacity-40">Piece Narrative (Description)</label>
+                  <textarea 
+                    rows={4}
+                    placeholder="Describe the craftsmanship and intent..."
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                    className="w-full bg-background/50 luxury-border px-6 py-4 font-sans text-sm resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-4">
+                   <button 
+                    disabled={isLoading}
+                    type="submit" 
+                    className="flex-1 bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RECORD TO ARCHIVE'}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="px-10 luxury-border py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-background transition-all"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
