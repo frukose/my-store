@@ -113,7 +113,9 @@ export const Cart: React.FC = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <span className="font-label-md text-[10px] text-accent italic">{item.product?.category}</span>
+                      <span className="font-label-md text-[10px] text-accent italic">
+                        {typeof item.product?.category === 'object' ? (item.product.category as any)?.name || 'Studio Piece' : item.product?.category}
+                      </span>
                       <h3 className="font-serif text-3xl italic tracking-tight">{item.product?.name}</h3>
                     </div>
                     <button 

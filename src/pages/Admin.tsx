@@ -88,14 +88,16 @@ export const Admin: React.FC = () => {
         stock_level: p.stockCount || 10
       }));
 
-      const { error: seedError } = await supabase.from('products').upsert(productsToSeed);
+      const { error: seedError } = await supabase
+        .from('products')
+        .upsert(productsToSeed, { onConflict: 'id' });
       if (!seedError) {
         const { data } = await supabase.from('products').select('*');
         if (data) setDbProducts(data);
         alert('Archive seeded successfully.');
       } else {
         console.error('Seed Error details:', seedError);
-        alert(`Seed error: ${seedError.message}\n\nPlease ensure your Supabase schema is up to date with the latest SQL migration.`);
+        alert(`Seed error: ${seedError.message}\n\nCode: ${seedError.code}\nHint: ${seedError.hint || 'No hint'}\nDetails: ${seedError.details || 'None'}`);
       }
     } catch (err) {
       console.error('Operational Seed Error:', err);

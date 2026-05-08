@@ -121,7 +121,7 @@ export const ProductDetail: React.FC = () => {
         <div className="flex gap-4 font-label-md text-secondary lowercase italic opacity-50">
           <span>Studio</span>
           <span>/</span>
-          <span>{product.category}</span>
+          <span>{typeof product.category === 'object' ? (product.category as any)?.name || 'Archive Piece' : product.category}</span>
         </div>
       </div>
 
