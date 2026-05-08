@@ -539,7 +539,7 @@ export const Admin: React.FC = () => {
                         <td className="px-8 py-6">
                            <input 
                             type="number" 
-                            defaultValue={product.stock_level}
+                            defaultValue={product.stock_level ?? 0}
                             className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-16 text-center outline-none focus:border-accent"
                           />
                           <span className="font-label-md text-[8px] opacity-40 ml-2">units</span>
@@ -549,7 +549,7 @@ export const Admin: React.FC = () => {
                              <span className="font-serif text-lg italic tracking-tight">₦</span>
                              <input 
                               type="text" 
-                              defaultValue={Number(product.price).toLocaleString()}
+                              defaultValue={Number(product.price || 0).toLocaleString()}
                               className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-28 outline-none focus:border-accent"
                             />
                           </div>

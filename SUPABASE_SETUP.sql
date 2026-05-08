@@ -32,11 +32,28 @@ CREATE TABLE IF NOT EXISTS products (
     price TEXT NOT NULL,
     category TEXT NOT NULL,
     description TEXT,
-    images TEXT[], -- Array of image URLs
+    images TEXT[],
     sizes TEXT[],
     stock_level INTEGER DEFAULT 10,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: Ensure all columns exist for products if table was created previously
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='stock_level') THEN
+        ALTER TABLE products ADD COLUMN stock_level INTEGER DEFAULT 10;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='description') THEN
+        ALTER TABLE products ADD COLUMN description TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='images') THEN
+        ALTER TABLE products ADD COLUMN images TEXT[];
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='sizes') THEN
+        ALTER TABLE products ADD COLUMN sizes TEXT[];
+    END IF;
+END $$;
 
 -- 4. Create Activities Table for tracking
 CREATE TABLE IF NOT EXISTS activities (
@@ -80,3 +97,6 @@ BEGIN
         CREATE POLICY "Allow admin write of products" ON products FOR ALL USING (true); -- Simplified for this setup
     END IF;
 END $$;
+
+-- 7. Force Schema Cache Reload (Hint for PostgREST)
+NOTIFY pgrst, 'reload schema';
