@@ -36,12 +36,14 @@ CREATE TABLE IF NOT EXISTS public.products (
     sizes TEXT[] DEFAULT '{}',
     stock_level INTEGER DEFAULT 10,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    metadata JSONB DEFAULT '{}'
+    metadata JSONB DEFAULT '{}',
+    videos TEXT[] DEFAULT '{}'
 );
 
 -- Ensure columns exist if table was already present
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS videos TEXT[] DEFAULT '{}';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sizes TEXT[] DEFAULT '{}';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock_level INTEGER DEFAULT 10;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';

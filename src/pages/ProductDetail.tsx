@@ -37,6 +37,7 @@ export const ProductDetail: React.FC = () => {
           description: productData.description || '',
           category: productData.category as any,
           images: productData.images || [],
+          videos: productData.videos || [],
           sizes: productData.sizes || [],
           colors: [],
           stockCount: productData.stock_level,
@@ -128,12 +129,30 @@ export const ProductDetail: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
         {/* Editorial Image Gallery */}
         <div className="order-2 lg:order-1 lg:col-span-7 space-y-8 md:space-y-12">
+          {product.videos?.map((vid, idx) => (
+             <motion.div 
+               key={`vid-${idx}`}
+               initial={{ opacity: 0, y: 30 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: idx * 0.2, duration: 1 }}
+               className="aspect-[4/5] overflow-hidden luxury-border bg-black"
+             >
+               <video 
+                 src={vid} 
+                 autoPlay 
+                 muted 
+                 loop 
+                 playsInline 
+                 className="w-full h-full object-cover" 
+               />
+             </motion.div>
+          ))}
           {product.images.map((img, idx) => (
             <motion.div 
-              key={idx}
+              key={`img-${idx}`}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2, duration: 1 }}
+              transition={{ delay: (product.videos?.length || 0 + idx) * 0.2, duration: 1 }}
               className="aspect-[4/5] overflow-hidden luxury-border bg-background"
             >
               <img src={img} alt={`${product.name} editorial view ${idx + 1}`} className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-opacity duration-1000" />

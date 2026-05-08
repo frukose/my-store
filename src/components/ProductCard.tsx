@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
 import { motion } from 'motion/react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Activity } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -21,8 +22,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img
             src={product.images[0] || 'https://via.placeholder.com/400x500?text=No+Image'}
             alt={product.name}
-            className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+            className={cn(
+              "w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105",
+              product.images.length > 1 && "group-hover:opacity-0"
+            )}
           />
+          {product.images.length > 1 && (
+            <img
+              src={product.images[1]}
+              alt={product.name}
+              className="absolute inset-0 w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105 opacity-0 group-hover:opacity-100"
+            />
+          )}
+          {product.videos && product.videos.length > 0 && (
+            <div className="absolute top-4 right-4 bg-background/80 px-2 py-1 luxury-border font-label-md text-[8px] flex items-center gap-1">
+              <Activity className="w-3 h-3" />
+            </div>
+          )}
           {product.isNewArrival && (
             <span className="absolute top-4 left-4 bg-background px-4 py-1.5 luxury-border font-label-md text-[9px]">New Arrival</span>
           )}

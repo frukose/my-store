@@ -5,6 +5,7 @@ export interface Product {
   description: string;
   category: string;
   images: string[];
+  videos?: string[];
   colors: string[];
   sizes: string[];
   story?: string;

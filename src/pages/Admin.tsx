@@ -44,10 +44,16 @@ export const Admin: React.FC = () => {
     price: '',
     category: 'Suits',
     description: '',
-    images: [''],
+    images: [] as string[],
+    videos: [] as string[],
     sizes: ['M', 'L', 'XL'],
     stock_level: 10
   });
+
+  const SIZES_VARIANTS = [
+    'S', 'M', 'L', 'XL', 'XXL', 'XXXL',
+    '39', '40', '41', '42', '43', '44', '45', '46'
+  ];
 
   useEffect(() => {
     fetchSiteSettings();
@@ -84,6 +90,7 @@ export const Admin: React.FC = () => {
         category: typeof p.category === 'object' ? (p.category as any).name : p.category,
         description: p.description,
         images: p.images || [],
+        videos: p.videos || [],
         sizes: p.sizes || [],
         stock_level: p.stockCount || 10
       }));
@@ -108,33 +115,47 @@ export const Admin: React.FC = () => {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setIsLoading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `product-images/${fileName}`;
+      const uploadedImages: string[] = [];
+      const uploadedVideos: string[] = [];
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('products')
-        .upload(filePath, file);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const isVideo = file.type.startsWith('video/');
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${isVideo ? 'videos' : 'product-images'}/${fileName}`;
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, file);
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('products')
-        .getPublicUrl(filePath);
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
+
+        if (isVideo) {
+          uploadedVideos.push(publicUrl);
+        } else {
+          uploadedImages.push(publicUrl);
+        }
+      }
 
       setNewProduct(prev => ({
         ...prev,
-        images: [publicUrl, ...prev.images.filter(img => img !== '')]
+        images: [...prev.images, ...uploadedImages],
+        videos: [...prev.videos, ...uploadedVideos]
       }));
-      alert('Archive image uploaded successfully.');
+      alert(`Archive asset(s) uploaded successfully.`);
     } catch (err: any) {
       console.error('Upload Error:', err);
-      alert('Error uploading image: ' + (err.message || 'Check if your "products" storage bucket is created in Supabase.'));
+      alert('Error uploading asset: ' + (err.message || 'Check your Supabase storage configuration.'));
     } finally {
       setIsLoading(false);
     }
@@ -199,6 +220,7 @@ export const Admin: React.FC = () => {
       category: newProduct.category,
       description: newProduct.description,
       images: cleanImages,
+      videos: newProduct.videos,
       sizes: newProduct.sizes,
       stock_level: parseInt(newProduct.stock_level.toString()) || 0
     };
@@ -206,7 +228,7 @@ export const Admin: React.FC = () => {
     const { error: insertError } = await supabase.from('products').insert([productData]);
 
     if (!insertError) {
-      alert('New archival piece added to the collection.');
+      alert('New archival piece recorded to the collection.');
       setShowAddModal(false);
       setNewProduct({
         id: '',
@@ -214,7 +236,8 @@ export const Admin: React.FC = () => {
         price: '',
         category: 'Suits',
         description: '',
-        images: [''],
+        images: [],
+        videos: [],
         sizes: ['M', 'L', 'XL'],
         stock_level: 10
       });
@@ -968,14 +991,14 @@ export const Admin: React.FC = () => {
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
-                    <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Digital Representation</label>
-                    {newProduct.images[0] && (
+                    <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Archive Assets (Images & Video)</label>
+                    {(newProduct.images.length > 0 || newProduct.videos.length > 0) && (
                       <button 
                         type="button"
-                        onClick={() => setNewProduct({...newProduct, images: ['']})}
+                        onClick={() => setNewProduct({...newProduct, images: [], videos: []})}
                         className="text-[8px] font-label-md text-red-500 uppercase tracking-widest hover:opacity-100 opacity-40"
                       >
-                        Clear Assets
+                        Wipe All Assets
                       </button>
                     )}
                   </div>
@@ -986,39 +1009,109 @@ export const Admin: React.FC = () => {
                         type="file" 
                         id="piece-upload"
                         className="hidden" 
-                        accept="image/*"
+                        accept="image/*,video/*"
+                        multiple
                         onChange={handleFileUpload}
                       />
                       <label 
                         htmlFor="piece-upload"
                         className="flex flex-col items-center justify-center gap-3 w-full h-40 luxury-border border-dashed bg-background/20 cursor-pointer hover:bg-background/40 transition-all group"
                       >
-                        <Upload className="w-5 h-5 opacity-40 group-hover:scale-110 transition-transform" />
-                        <span className="font-label-md text-[9px] uppercase tracking-widest opacity-60">Upload from Laptop</span>
+                        <div className="flex gap-2">
+                           <Upload className="w-5 h-5 opacity-40 group-hover:scale-110 transition-transform" />
+                           <Activity className="w-5 h-5 opacity-20 group-hover:scale-110 transition-transform" />
+                        </div>
+                        <span className="font-label-md text-[9px] uppercase tracking-widest opacity-60">Upload Assets from Laptop</span>
+                        <span className="text-[7px] font-sans opacity-30 mt-[-8px]">Supports multiple images & MP4</span>
                       </label>
                     </div>
 
-                    <div className="w-full h-40 luxury-border bg-background/10 flex items-center justify-center overflow-hidden">
-                      {newProduct.images[0] ? (
-                        <img src={newProduct.images[0]} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="text-center space-y-2">
-                          <Globe className="w-4 h-4 mx-auto opacity-20" />
-                          <span className="font-label-md text-[8px] opacity-20 uppercase">Awaiting Asset...</span>
-                        </div>
-                      )}
+                    <div className="w-full h-40 luxury-border bg-background/10 overflow-x-auto overflow-y-hidden no-scrollbar">
+                      <div className="flex gap-2 p-2 h-full min-w-full">
+                        {newProduct.images.map((img, idx) => (
+                           <div key={idx} className="h-full aspect-[3/4] relative group/item shrink-0">
+                             <img src={img} alt="" className="w-full h-full object-cover" />
+                             <button 
+                               onClick={() => setNewProduct({...newProduct, images: newProduct.images.filter((_, i) => i !== idx)})}
+                               className="absolute top-1 right-1 bg-white/80 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                             >
+                               <X className="w-3 h-3" />
+                             </button>
+                           </div>
+                        ))}
+                        {newProduct.videos.map((vid, idx) => (
+                           <div key={idx} className="h-full aspect-[3/4] relative group/item shrink-0 bg-primary/10 flex items-center justify-center">
+                             <Activity className="w-6 h-6 opacity-40" />
+                             <span className="absolute bottom-2 font-label-md text-[7px] uppercase tracking-widest opacity-40">Vid {idx+1}</span>
+                             <button 
+                               onClick={() => setNewProduct({...newProduct, videos: newProduct.videos.filter((_, i) => i !== idx)})}
+                               className="absolute top-1 right-1 bg-white/80 p-1 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                             >
+                               <X className="w-3 h-3" />
+                             </button>
+                           </div>
+                        ))}
+                        {newProduct.images.length === 0 && newProduct.videos.length === 0 && (
+                          <div className="flex-1 flex items-center justify-center">
+                            <div className="text-center space-y-2">
+                              <Globe className="w-4 h-4 mx-auto opacity-20" />
+                              <span className="font-label-md text-[8px] opacity-20 uppercase">Awaiting Assets...</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="font-label-md text-[9px] opacity-40 italic lowercase">Or link external archival source (URL)</label>
-                    <input 
-                      type="url" 
-                      placeholder="https://images.unsplash.com/..."
-                      value={newProduct.images[0]}
-                      onChange={(e) => setNewProduct({...newProduct, images: [e.target.value]})}
-                      className="w-full bg-background/50 luxury-border px-6 py-4 font-mono text-[10px]"
-                    />
+                    <div className="flex gap-2">
+                      <input 
+                        type="url" 
+                        placeholder="Paste Asset URL..."
+                        className="flex-1 bg-background/50 luxury-border px-6 py-4 font-mono text-[10px]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const url = (e.target as HTMLInputElement).value;
+                            if (!url) return;
+                            const isVid = url.toLowerCase().endsWith('.mp4') || url.toLowerCase().endsWith('.webm');
+                            if (isVid) {
+                              setNewProduct(p => ({...p, videos: [...p.videos, url]}));
+                            } else {
+                              setNewProduct(p => ({...p, images: [...p.images, url]}));
+                            }
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Available Sizes Varieties</label>
+                  <div className="flex flex-wrap gap-2">
+                    {SIZES_VARIANTS.map(size => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          const sizes = newProduct.sizes.includes(size)
+                            ? newProduct.sizes.filter(s => s !== size)
+                            : [...newProduct.sizes, size];
+                          setNewProduct({...newProduct, sizes});
+                        }}
+                        className={cn(
+                          "px-4 py-2 luxury-border font-label-md text-[9px] transition-all",
+                          newProduct.sizes.includes(size) 
+                            ? "bg-primary text-white" 
+                            : "bg-white opacity-40 hover:opacity-100"
+                        )}
+                      >
+                        {size}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
