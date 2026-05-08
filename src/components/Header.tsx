@@ -3,7 +3,11 @@ import { Search, ShoppingBag, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../lib/CartContext';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  brandName?: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({ brandName = 'aystores' }) => {
   const { cartCount } = useCart();
 
   return (
@@ -11,7 +15,7 @@ export const Header: React.FC = () => {
       <div className="flex justify-between items-center h-16 relative">
         <div className="flex items-center gap-16">
           <Link to="/" className="text-3xl font-serif tracking-tight lowercase italic">
-            aystores
+            {brandName}
           </Link>
           <nav className="hidden lg:flex gap-12 text-[11px] font-medium uppercase tracking-[0.3em] text-secondary">
             <Link to="/shop" className="text-primary hover:text-accent transition-colors relative">Collection</Link>

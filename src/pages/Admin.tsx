@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { PRODUCTS, CATEGORIES } from '../constants';
-import { Search, Plus, Trash2, Edit3, TrendingUp, Users, Package, ShoppingBag, BarChart3, ChevronRight, ArrowUpRight, Activity, Settings, Globe } from 'lucide-react';
+import { Search, Plus, Trash2, Edit3, TrendingUp, Users, Package, ShoppingBag, BarChart3, ChevronRight, ArrowUpRight, Activity, Settings, Globe, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const MOCK_SALES_DATA = [
   { name: 'Jan', value: 4000 },
@@ -16,20 +17,14 @@ const MOCK_SALES_DATA = [
   { name: 'Jul', value: 3490 },
 ];
 
-const MOCK_ACTIVITIES = [
-  { id: '1', user: 'Farouk A.', action: 'placed a new order', time: '2 mins ago', type: 'order', amount: '₦145,000' },
-  { id: '2', user: 'Sarah O.', action: 'viewed Structured Blazer', time: '15 mins ago', type: 'view' },
-  { id: '3', user: 'Adeshola K.', action: 'added item to cart', time: '1 hour ago', type: 'cart' },
-  { id: '4', user: 'System', action: 'inventory sync completed', time: '2 hours ago', type: 'system' },
-  { id: '5', user: 'James W.', action: 'placed a new order', time: '5 hours ago', type: 'order', amount: '₦58,000' },
-];
-
 export const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'activity' | 'settings'>('dashboard');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dbActivities, setDbActivities] = useState<any[]>([]);
 
   const [siteSettings, setSiteSettings] = useState({
     brandName: 'aystores',
@@ -41,23 +36,69 @@ export const Admin: React.FC = () => {
   });
 
   useEffect(() => {
-    // Load persisted colors
-    const savedPrimary = localStorage.getItem('primaryColor');
-    const savedAccent = localStorage.getItem('accentColor');
-    if (savedPrimary || savedAccent) {
-      setSiteSettings(prev => ({
-        ...prev,
-        primaryColor: savedPrimary || prev.primaryColor,
-        accentColor: savedAccent || prev.accentColor,
-      }));
+    fetchSiteSettings();
+    fetchActivities();
+  }, [isAuthenticated]);
+
+  const fetchSiteSettings = async () => {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('*')
+      .eq('id', 1)
+      .single();
+
+    if (data) {
+      setSiteSettings({
+        brandName: data.brand_name,
+        tagline: data.tagline,
+        currency: data.currency,
+        commission: data.commission,
+        primaryColor: data.primary_color,
+        accentColor: data.accent_color,
+      });
+      // Apply colors to document
+      document.documentElement.style.setProperty('--primary-color', data.primary_color);
+      document.documentElement.style.setProperty('--accent-color', data.accent_color);
     }
-  }, []);
+  };
+
+  const fetchActivities = async () => {
+    const { data, error } = await supabase
+      .from('activities')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (data) setDbActivities(data);
+  };
+
+  const syncSettings = async () => {
+    setIsLoading(true);
+    const { error } = await supabase
+      .from('site_settings')
+      .update({
+        brand_name: siteSettings.brandName,
+        tagline: siteSettings.tagline,
+        currency: siteSettings.currency,
+        commission: siteSettings.commission,
+        primary_color: siteSettings.primaryColor,
+        accent_color: siteSettings.accentColor,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', 1);
+
+    if (!error) {
+      document.documentElement.style.setProperty('--primary-color', siteSettings.primaryColor);
+      document.documentElement.style.setProperty('--accent-color', siteSettings.accentColor);
+      alert('Studio configuration synchronized with Supabase.');
+    } else {
+      alert('Error syncing settings: ' + error.message);
+    }
+    setIsLoading(false);
+  };
 
   const applyColors = () => {
-    document.documentElement.style.setProperty('--primary-color', siteSettings.primaryColor);
-    document.documentElement.style.setProperty('--accent-color', siteSettings.accentColor);
-    localStorage.setItem('primaryColor', siteSettings.primaryColor);
-    localStorage.setItem('accentColor', siteSettings.accentColor);
+    syncSettings();
   };
 
   const toggleSelectAll = () => {
@@ -262,15 +303,18 @@ export const Admin: React.FC = () => {
                 <div className="luxury-card space-y-8">
                   <h3 className="font-label-md">Recent Events</h3>
                   <div className="space-y-6">
-                    {MOCK_ACTIVITIES.slice(0, 3).map((act) => (
+                    {dbActivities.slice(0, 3).map((act) => (
                       <div key={act.id} className="flex gap-4 group cursor-pointer border-l border-on-background/5 pl-4 hover:border-accent transition-all">
                         <div className="flex-1 space-y-1">
-                          <p className="font-serif text-sm italic">{act.user} <span className="not-italic text-secondary opacity-60 font-sans text-xs">{act.action}</span></p>
-                          <p className="font-label-md text-[8px] opacity-40 uppercase tracking-widest">{act.time}</p>
+                          <p className="font-serif text-sm italic">{act.username} <span className="not-italic text-secondary opacity-60 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-label-md text-[8px] opacity-40 uppercase tracking-widest">{new Date(act.created_at).toLocaleTimeString()}</p>
                         </div>
                         <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-all self-center" />
                       </div>
                     ))}
+                    {dbActivities.length === 0 && (
+                      <p className="text-xs font-label-md opacity-40 italic">No real-time activities recorded.</p>
+                    )}
                   </div>
                   <button onClick={() => setActiveTab('activity')} className="w-full py-4 luxury-border font-label-md text-[9px] hover:bg-primary hover:text-white transition-all">
                     Open Activity Archive
@@ -402,7 +446,7 @@ export const Admin: React.FC = () => {
                </div>
                
                <div className="space-y-4">
-                 {MOCK_ACTIVITIES.map((act) => (
+                 {dbActivities.map((act) => (
                    <div key={act.id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 luxury-border bg-white/30 gap-4">
                      <div className="flex items-center gap-6">
                         <div className={cn(
@@ -412,13 +456,18 @@ export const Admin: React.FC = () => {
                           {act.type === 'order' ? <ShoppingBag className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                         </div>
                         <div className="space-y-1">
-                          <p className="font-serif text-lg italic">{act.user} <span className="not-italic opacity-60 ml-2 font-sans text-xs">{act.action}</span></p>
-                          <p className="font-label-md text-[9px] opacity-40 uppercase tracking-[0.2em]">{act.time}</p>
+                          <p className="font-serif text-lg italic">{act.username} <span className="not-italic opacity-60 ml-2 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-label-md text-[9px] opacity-40 uppercase tracking-[0.2em]">{new Date(act.created_at).toLocaleString()}</p>
                         </div>
                      </div>
                      {act.amount && <span className="font-serif text-2xl italic text-primary">{act.amount}</span>}
                    </div>
                  ))}
+                 {dbActivities.length === 0 && (
+                   <div className="p-20 text-center space-y-4 luxury-border bg-white/20">
+                     <p className="font-label-md opacity-40">The archive is currently silent.</p>
+                   </div>
+                 )}
                </div>
              </div>
           </motion.div>
@@ -500,9 +549,14 @@ export const Admin: React.FC = () => {
                 </div>
                 <button 
                   onClick={applyColors}
-                  className="w-full bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all duration-500 uppercase"
+                  disabled={isLoading}
+                  className="w-full bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all duration-500 uppercase flex items-center justify-center gap-3 disabled:opacity-50"
                 >
-                  Synchronize Studio Config
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Synchronize Studio Config'
+                  )}
                 </button>
               </div>
             </div>
