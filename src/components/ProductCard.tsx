@@ -47,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex flex-col space-y-4">
           <div className="space-y-1">
             <span className="font-label-md text-[9px] text-secondary lowercase italic opacity-60 tracking-widest">
-              {typeof product.category === 'object' ? (product.category as any)?.name || 'Studio Object' : product.category}
+              {typeof product.category === 'object' ? (product.category as any)?.name || 'Shop Object' : product.category}
             </span>
             <h3 className="font-serif text-2xl italic tracking-tight text-primary group-hover:text-accent transition-colors">{product.name}</h3>
           </div>

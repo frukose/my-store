@@ -52,8 +52,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="space-y-8">
             <h3 className="font-label-md">Collections</h3>
             <ul className="space-y-4 font-label-md text-[10px] text-secondary lowercase italic">
-              <li><Link to="/shop?category=clothes" className="hover:text-primary transition-colors">Studio Goods</Link></li>
-              <li><Link to="/shop?category=shoes" className="hover:text-primary transition-colors">Footwear Archive</Link></li>
+              <li><Link to="/shop?category=clothes" className="hover:text-primary transition-colors">Shop Goods</Link></li>
+              <li><Link to="/shop?category=shoes" className="hover:text-primary transition-colors">Footwear Collection</Link></li>
               <li><Link to="/shop?category=accessories" className="hover:text-primary transition-colors">Daily Objects</Link></li>
             </ul>
           </div>
@@ -71,7 +71,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex gap-8 md:gap-12 font-label-md text-[9px] lowercase italic">
             <span className="cursor-pointer hover:text-primary">Instagram</span>
             <span className="cursor-pointer hover:text-primary">LinkedIn</span>
-            <Link to="/admin" className="opacity-10 hover:opacity-100 transition-opacity">_archive_</Link>
+            <Link to="/admin" className="opacity-10 hover:opacity-100 transition-opacity">_dashboard_</Link>
           </div>
         </div>
       </footer>

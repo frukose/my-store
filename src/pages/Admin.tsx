@@ -102,7 +102,7 @@ export const Admin: React.FC = () => {
       if (!seedError) {
         const { data } = await supabase.from('products').select('*');
         if (data) setDbProducts(data);
-        alert('Archive seeded successfully.');
+        alert('Store seeded successfully.');
       } else {
         console.error('Seed Error details:', seedError);
         let errorMsg = `Seed error: ${seedError.message}`;
@@ -157,7 +157,7 @@ export const Admin: React.FC = () => {
         images: [...prev.images, ...uploadedImages],
         videos: [...prev.videos, ...uploadedVideos]
       }));
-      alert(`Archive asset(s) uploaded successfully.`);
+      alert(`Collection asset(s) uploaded successfully.`);
     } catch (err: any) {
       console.error('Upload Error:', err);
       const isBucketError = err.message?.includes('Bucket not found');
@@ -184,7 +184,7 @@ export const Admin: React.FC = () => {
         const products = rows.slice(1).map(row => {
           const [name, price, category, description, imageUrl, videoUrl] = row.split(',').map(s => s.trim());
           return {
-            id: `ARCHIVE-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+            id: `PIECE-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
             name: name || 'Unnamed Piece',
             price: price || '0',
             category: category || 'Suits',
@@ -315,7 +315,7 @@ export const Admin: React.FC = () => {
       localStorage.setItem('brandName', siteSettings.brandName);
       localStorage.setItem('primaryColor', siteSettings.primaryColor);
       localStorage.setItem('accentColor', siteSettings.accentColor);
-      alert('Studio configuration synchronized with Supabase.');
+      alert('Shop configuration synchronized with Supabase.');
     } else {
       alert('Error syncing settings: ' + error.message);
     }
@@ -349,17 +349,17 @@ export const Admin: React.FC = () => {
     if (!error) {
       setDbProducts([]);
       setSelectedItems([]);
-      alert('Archive wiped clean.');
+      alert('Store wiped clean.');
       await seedProducts(); // Auto-reseed with defaults
     } else {
-      alert('Error wiping archive: ' + error.message);
+      alert('Error wiping store: ' + error.message);
     }
     setIsLoading(false);
   };
 
   const handleBulkAction = async (action: string) => {
     if (action === 'Delete') {
-      if (!confirm(`Are you sure you want to delete ${selectedItems.length} objects from the archive?`)) return;
+      if (!confirm(`Are you sure you want to delete ${selectedItems.length} objects from the collection?`)) return;
       
       setIsLoading(true);
       const { error } = await supabase
@@ -382,7 +382,7 @@ export const Admin: React.FC = () => {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this piece from the archive?')) return;
+    if (!confirm('Are you sure you want to delete this piece from the collection?')) return;
     
     setIsLoading(true);
     const { error } = await supabase
@@ -422,7 +422,7 @@ export const Admin: React.FC = () => {
         >
           <div className="text-center space-y-4">
             <span className="font-label-md text-accent tracking-[0.4em] lowercase italic">Restricted Access</span>
-            <h2 className="font-display-md text-4xl italic">Studio Entry</h2>
+            <h2 className="font-display-md text-4xl italic">Shop Entry</h2>
             <div className="luxury-line w-12 mx-auto opacity-30" />
           </div>
 
@@ -439,7 +439,7 @@ export const Admin: React.FC = () => {
                 )}
               />
               {error && (
-                <p className="text-[9px] font-label-md text-red-500 text-center lowercase italic">Invalid credentials. Archive locked.</p>
+                <p className="text-[9px] font-label-md text-red-500 text-center lowercase italic">Invalid credentials. Dashboard locked.</p>
               )}
             </div>
             <button 
@@ -471,8 +471,8 @@ export const Admin: React.FC = () => {
       <section className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-4">
-            <span className="font-label-md text-accent tracking-[0.4em] lowercase italic">Studio Management Interface</span>
-            <h1 className="font-display-md text-6xl italic">The Control Archive</h1>
+            <span className="font-label-md text-accent tracking-[0.4em] lowercase italic">Shop Management Interface</span>
+            <h1 className="font-display-md text-6xl italic">The Control Center</h1>
           </div>
           
           <div className="flex gap-4">
@@ -603,7 +603,7 @@ export const Admin: React.FC = () => {
                     )}
                   </div>
                   <button onClick={() => setActiveTab('activity')} className="w-full py-4 luxury-border font-label-md text-[9px] hover:bg-primary hover:text-white transition-all">
-                    Open Activity Archive
+                    Open Activities Log
                   </button>
                 </div>
               </div>
@@ -625,7 +625,7 @@ export const Admin: React.FC = () => {
                   <div className="flex gap-6">
                     <button onClick={() => handleBulkAction('Update Stock')} className="font-label-md text-[9px] hover:text-accent transition-colors">Sync Stock</button>
                     <button onClick={() => handleBulkAction('Price Adjustment')} className="font-label-md text-[9px] hover:text-accent transition-colors">Adjust Price</button>
-                    <button onClick={() => handleBulkAction('Delete')} className="font-label-md text-[9px] text-red-300 hover:text-red-100 transition-colors">Delete Archive</button>
+                    <button onClick={() => handleBulkAction('Delete')} className="font-label-md text-[9px] text-red-300 hover:text-red-100 transition-colors">Clear Collection</button>
                   </div>
                   <div className="w-px h-4 bg-white/20" />
                   <button onClick={() => setSelectedItems([])} className="font-label-md text-[9px] opacity-60 hover:opacity-100 uppercase italic">Cancel</button>
@@ -634,7 +634,7 @@ export const Admin: React.FC = () => {
 
               <div className="p-8 border-b border-on-background/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-background/30">
                 <div className="space-y-1">
-                  <h3 className="font-label-md">Object Archive</h3>
+                  <h3 className="font-label-md">Store Collection</h3>
                   <p className="font-caption">Total recorded items available in digital collection</p>
                 </div>
                 <div className="flex items-center gap-4 relative max-w-lg w-full">
@@ -642,7 +642,7 @@ export const Admin: React.FC = () => {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary w-4 h-4 opacity-40" />
                     <input 
                       className="w-full bg-white luxury-border px-12 py-4 text-[10px] font-label-md uppercase outline-none focus:border-accent transition-all" 
-                      placeholder="Search Archive..." 
+                      placeholder="Search Collection..." 
                       type="text" 
                     />
                   </div>
@@ -758,7 +758,7 @@ export const Admin: React.FC = () => {
           <motion.div key="activity" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
              <div className="luxury-card space-y-8">
                <div className="flex justify-between items-end">
-                 <h3 className="font-label-md">Studio Activity Feed</h3>
+                 <h3 className="font-label-md">Shop Activity Feed</h3>
                  <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                     <span className="font-label-md text-[9px] opacity-60">Streaming Live Tracking</span>
@@ -790,7 +790,7 @@ export const Admin: React.FC = () => {
                  ))}
                  {dbActivities.length === 0 && (
                    <div className="p-20 text-center space-y-4 luxury-border bg-white/20">
-                     <p className="font-label-md opacity-40">The archive is currently silent.</p>
+                     <p className="font-label-md opacity-40">The collection is currently empty.</p>
                    </div>
                  )}
                </div>
@@ -833,7 +833,7 @@ export const Admin: React.FC = () => {
                      <span className="font-serif italic text-xl">Nigerian Naira (₦)</span>
                    </div>
                    <div className="flex justify-between items-center py-4 border-b border-on-background/5">
-                     <span className="font-label-md text-xs">Studio Platform Fee</span>
+                     <span className="font-label-md text-xs">Shop Platform Fee</span>
                      <input 
                       type="text" 
                       value={siteSettings.commission}
@@ -894,28 +894,28 @@ export const Admin: React.FC = () => {
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    'Synchronize Studio Config'
+                    'Synchronize Shop Config'
                   )}
                 </button>
               </div>
 
               <div className="luxury-card space-y-8">
                 <h3 className="font-label-md text-red-500 italic">Clinical Database Tools</h3>
-                <p className="text-xs font-sans opacity-60">Use these only if the archive becomes out of sync or empty. Seeding will attempt to restore missing defaults.</p>
+                <p className="text-xs font-sans opacity-60">Use these only if the collection becomes out of sync or empty. Seeding will attempt to restore missing defaults.</p>
                 <div className="grid grid-cols-1 gap-4">
                   <button 
                     onClick={seedProducts}
                     disabled={isLoading}
                     className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RE-SEED CORE ARCHIVE'}
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RE-SEED CORE STORE'}
                   </button>
                   <button 
                     onClick={handleWipeProducts}
                     disabled={isLoading}
                     className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'WIPE & RESET ARCHIVE'}
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'WIPE & RESET STORE'}
                   </button>
                   <button 
                     onClick={() => { fetchProducts(); fetchActivities(); fetchSiteSettings(); }}
@@ -948,7 +948,7 @@ export const Admin: React.FC = () => {
               className="luxury-card w-full max-w-2xl relative z-10 bg-white max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-12">
-                <h2 className="font-display-md text-3xl italic">New Archive Entry</h2>
+                <h2 className="font-display-md text-3xl italic">New Showroom Piece</h2>
                 <button onClick={() => setShowAddModal(false)} className="p-2 opacity-40 hover:opacity-100 transition-opacity">
                   <Plus className="w-6 h-6 rotate-45" />
                 </button>
@@ -1002,7 +1002,7 @@ export const Admin: React.FC = () => {
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
-                    <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Archive Assets (Images & Video)</label>
+                    <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Showroom Assets (Images & Video)</label>
                     {(newProduct.images.length > 0 || newProduct.videos.length > 0) && (
                       <button 
                         type="button"
@@ -1143,7 +1143,7 @@ export const Admin: React.FC = () => {
                     type="submit" 
                     className="flex-1 bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RECORD TO ARCHIVE'}
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'ADD TO SHOWROOM'}
                   </button>
                   <button 
                     type="button"

@@ -19,8 +19,8 @@ export const Header: React.FC<HeaderProps> = ({ brandName = 'aystores' }) => {
           </Link>
           <nav className="hidden lg:flex gap-12 text-[11px] font-medium uppercase tracking-[0.3em] text-secondary">
             <Link to="/shop" className="text-primary hover:text-accent transition-colors relative">Collection</Link>
-            <Link to="/shop?category=clothes" className="hover:text-primary transition-all">Studio</Link>
-            <Link to="/shop?category=shoes" className="hover:text-primary transition-all">Archive</Link>
+            <Link to="/shop?category=clothes" className="hover:text-primary transition-all">Shop</Link>
+            <Link to="/shop?category=shoes" className="hover:text-primary transition-all">Showroom</Link>
           </nav>
         </div>
         

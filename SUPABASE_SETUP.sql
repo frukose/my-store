@@ -25,7 +25,7 @@ VALUES (1, 'aystores', 'The pinnacle of modern digital tailoring in Nigeria.', '
 ON CONFLICT (id) DO UPDATE SET 
     whatsapp_number = COALESCE(site_settings.whatsapp_number, EXCLUDED.whatsapp_number);
 
--- 3. Create Products Table (Enhanced for Archival Data)
+-- 3. Create Products Table (Enhanced for Piece Data)
 CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -48,7 +48,7 @@ ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sizes TEXT[] DEFAULT '{}';
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock_level INTEGER DEFAULT 10;
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
 
--- 4. Storage Bucket for Archival Assets
+-- 4. Storage Bucket for Piece Assets
 -- Note: Create 'products' bucket in Supabase dashboard for this to work
 -- Or use these SQL statements if your project supports extensions
 INSERT INTO storage.buckets (id, name, public) 
@@ -99,7 +99,7 @@ BEGIN
 END $$;
 
 -- 7. Force Schema Cache Reload & Metadata
-COMMENT ON TABLE public.products IS 'Archival pieces collection';
+COMMENT ON TABLE public.products IS 'Official pieces collection';
 NOTIFY pgrst, 'reload schema';
 ALTER TABLE public.products REPLICA IDENTITY FULL;
 GRANT ALL ON public.products TO anon, authenticated, service_role;

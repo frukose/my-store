@@ -58,7 +58,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: '4',
-    name: 'Studio Structured Blazer',
+    name: 'Shop Structured Blazer',
     price: 145000,
     description: 'Masterclass in modern tailoring with architectural silhouette.',
     category: 'clothes',
@@ -68,7 +68,7 @@ export const PRODUCTS: Product[] = [
     ],
     colors: ['Bone White'],
     sizes: ['S', 'M', 'L', 'XL'],
-    story: 'Crafted from premium Italian wool crepe, the Studio Structured Blazer represents the pinnacle of modern tailoring. Its architectural silhouette is achieved through meticulous canvas padding and hand-finished lapels.',
+    story: 'Crafted from premium Italian wool crepe, the Shop Structured Blazer represents the pinnacle of modern tailoring. Its architectural silhouette is achieved through meticulous canvas padding and hand-finished lapels.',
     inStock: true,
     stockCount: 8,
     sku: 'AY-2024-022',

@@ -61,7 +61,7 @@ export const Cart: React.FC = () => {
     ).join('\n');
     
     const message = encodeURIComponent(
-      `Hello ${brandName.toUpperCase()}, I'd like to place an order from the Studio:\n\n${itemsList}\n\n*Total: ₦${subtotal.toLocaleString()}*`
+      `Hello ${brandName.toUpperCase()}, I'd like to place an order from the Shop:\n\n${itemsList}\n\n*Total: ₦${subtotal.toLocaleString()}*`
     );
     
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
@@ -114,7 +114,7 @@ export const Cart: React.FC = () => {
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <span className="font-label-md text-[10px] text-accent italic">
-                        {typeof item.product?.category === 'object' ? (item.product.category as any)?.name || 'Studio Piece' : item.product?.category}
+                        {typeof item.product?.category === 'object' ? (item.product.category as any)?.name || 'Shop Piece' : item.product?.category}
                       </span>
                       <h3 className="font-serif text-3xl italic tracking-tight">{item.product?.name}</h3>
                     </div>
@@ -131,7 +131,7 @@ export const Cart: React.FC = () => {
                       <div className="font-label-md text-xs">{item.selectedSize}</div>
                     </div>
                     <div className="space-y-2">
-                      <span className="font-label-md text-[9px] opacity-40">Studio Color</span>
+                      <span className="font-label-md text-[9px] opacity-40">Shop Color</span>
                       <div className="font-label-md text-xs">{item.selectedColor}</div>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ export const Cart: React.FC = () => {
                   <span>₦ {subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-label-md text-xs text-secondary italic">
-                  <span>Studio Delivery</span>
+                  <span>Shop Delivery</span>
                   <span className="text-accent uppercase not-italic">Complimentary</span>
                 </div>
                 <div className="luxury-line" />
@@ -187,7 +187,7 @@ export const Cart: React.FC = () => {
               </button>
               <div className="text-center space-y-4">
                 <p className="font-caption text-[9px] leading-relaxed opacity-60">
-                  By proceeding to checkout, you agree to our Studio Terms of Service and Privacy Policy. 
+                  By proceeding to checkout, you agree to our Shop Terms of Service and Privacy Policy. 
                   All objects are subject to availability.
                 </p>
               </div>

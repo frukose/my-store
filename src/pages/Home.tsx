@@ -68,7 +68,7 @@ export const Home: React.FC = () => {
                 to="/shop" 
                 className="w-full sm:w-auto text-center bg-primary text-white px-12 py-5 font-label-md hover:bg-accent transition-all duration-500"
               >
-                Enter Studio
+                Enter Shop
               </Link>
               <Link 
                 to="/shop?category=clothes" 
@@ -143,7 +143,7 @@ export const Home: React.FC = () => {
           </h2>
           <div className="w-12 h-px bg-accent mx-auto" />
           <p className="font-body-md md:font-body-lg text-surface/60 max-w-2xl mx-auto italic">
-            Every garment that leaves our studio is a testament to the luxury fashion movement in Nigeria. 
+            Every garment that leaves our shop is a testament to the luxury fashion movement in Nigeria. 
             We prioritize quality over quantity, and longevity over trends.
           </p>
         </div>

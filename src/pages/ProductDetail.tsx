@@ -120,9 +120,9 @@ export const ProductDetail: React.FC = () => {
           Back to Collection
         </Link>
         <div className="flex gap-4 font-label-md text-secondary lowercase italic opacity-50">
-          <span>Studio</span>
+          <span>Shop</span>
           <span>/</span>
-          <span>{typeof product.category === 'object' ? (product.category as any)?.name || 'Archive Piece' : product.category}</span>
+          <span>{typeof product.category === 'object' ? (product.category as any)?.name || 'Collection Piece' : product.category}</span>
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export const ProductDetail: React.FC = () => {
               <span className="font-label-md text-accent italic lowercase">Reference no. {product.id.slice(0, 8)}</span>
               <h1 className="text-4xl md:text-6xl font-display-md leading-tight">{product.name}</h1>
               <div className="flex justify-between items-center py-4 border-y border-on-background/10">
-                <span className="font-label-md">Studio Price</span>
+                <span className="font-label-md">Shop Price</span>
                 <span className="font-serif text-2xl md:text-3xl italic">₦{product.price.toLocaleString()}</span>
               </div>
             </div>
@@ -224,18 +224,18 @@ export const ProductDetail: React.FC = () => {
                     onClick={handleWhatsAppInquiry}
                     className="h-16 luxury-border font-label-md text-[9px] hover:bg-primary hover:text-white transition-all"
                   >
-                    Studio Inquiry
+                    Shop Inquiry
                   </button>
                   <button className="h-16 luxury-border font-label-md text-[9px] flex items-center justify-center gap-2 group hover:bg-primary hover:text-white transition-all">
                     <Heart className="w-3 h-3 group-hover:fill-current" />
-                    Archive Move
+                    Official Style
                   </button>
                 </div>
               </div>
 
               <div className="space-y-4 pt-12 border-t border-on-background/5">
                 <p className="font-caption">Complimentary nationwide shipping on all Volume 01 objects.</p>
-                <p className="font-caption">Secure payments processed via encrypted studio channels.</p>
+                <p className="font-caption">Secure payments processed via encrypted shop channels.</p>
               </div>
             </div>
           </div>
