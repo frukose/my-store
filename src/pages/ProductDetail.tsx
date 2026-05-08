@@ -152,7 +152,7 @@ export const ProductDetail: React.FC = () => {
               key={`img-${idx}`}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: (product.videos?.length || 0 + idx) * 0.2, duration: 1 }}
+              transition={{ delay: ((product.videos?.length || 0) + idx) * 0.2, duration: 1 }}
               className="aspect-[4/5] overflow-hidden luxury-border bg-background"
             >
               <img src={img} alt={`${product.name} editorial view ${idx + 1}`} className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-opacity duration-1000" />

@@ -98,13 +98,18 @@ export const Admin: React.FC = () => {
       const { error: seedError } = await supabase
         .from('products')
         .upsert(productsToSeed, { onConflict: 'id' });
+      
       if (!seedError) {
         const { data } = await supabase.from('products').select('*');
         if (data) setDbProducts(data);
         alert('Archive seeded successfully.');
       } else {
         console.error('Seed Error details:', seedError);
-        alert(`Seed error: ${seedError.message}\n\nCode: ${seedError.code}\nHint: ${seedError.hint || 'No hint'}\nDetails: ${seedError.details || 'None'}`);
+        let errorMsg = `Seed error: ${seedError.message}`;
+        if (seedError.code === 'PGRST204') {
+          errorMsg = "SCHEMA OUT OF SYNC: The 'videos' column is missing in your database.\n\nACTION REQUIRED: Please copy the SQL from /SUPABASE_SETUP.sql and run it in your Supabase SQL Editor to update your table schema.";
+        }
+        alert(errorMsg);
       }
     } catch (err) {
       console.error('Operational Seed Error:', err);
@@ -155,7 +160,12 @@ export const Admin: React.FC = () => {
       alert(`Archive asset(s) uploaded successfully.`);
     } catch (err: any) {
       console.error('Upload Error:', err);
-      alert('Error uploading asset: ' + (err.message || 'Check your Supabase storage configuration.'));
+      const isBucketError = err.message?.includes('Bucket not found');
+      alert(
+        isBucketError 
+          ? 'SUPABASE STORAGE ERROR: The "products" bucket was not found. Please create a PUBLIC bucket named "products" in your Supabase Dashboard Storage section to enable uploads.'
+          : 'Error uploading asset: ' + (err.message || 'Check your Supabase storage configuration.')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +182,7 @@ export const Admin: React.FC = () => {
         const rows = text.split('\n').filter(row => row.trim() !== '');
         // Basic CSV parsing (assuming: name, price, category, description, imageUrl)
         const products = rows.slice(1).map(row => {
-          const [name, price, category, description, imageUrl] = row.split(',').map(s => s.trim());
+          const [name, price, category, description, imageUrl, videoUrl] = row.split(',').map(s => s.trim());
           return {
             id: `ARCHIVE-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
             name: name || 'Unnamed Piece',
@@ -180,6 +190,7 @@ export const Admin: React.FC = () => {
             category: category || 'Suits',
             description: description || '',
             images: imageUrl ? [imageUrl] : [],
+            videos: videoUrl ? [videoUrl] : [],
             sizes: ['M', 'L', 'XL'],
             stock_level: 10
           };
@@ -539,7 +550,7 @@ export const Admin: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex-grow">
+                <div className="h-[350px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={MOCK_SALES_DATA}>
                       <defs>
