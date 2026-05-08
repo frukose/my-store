@@ -25,9 +25,8 @@ VALUES (1, 'aystores', 'The pinnacle of modern digital tailoring in Nigeria.', '
 ON CONFLICT (id) DO UPDATE SET 
     whatsapp_number = COALESCE(site_settings.whatsapp_number, EXCLUDED.whatsapp_number);
 
--- 3. Create Products Table (Clean Re-creation to fix schema cache issues)
-DROP TABLE IF EXISTS public.products CASCADE;
-CREATE TABLE public.products (
+-- 3. Create Products Table (Enhanced for Archival Data)
+CREATE TABLE IF NOT EXISTS public.products (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     price TEXT NOT NULL,
@@ -36,8 +35,27 @@ CREATE TABLE public.products (
     images TEXT[] DEFAULT '{}',
     sizes TEXT[] DEFAULT '{}',
     stock_level INTEGER DEFAULT 10,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    metadata JSONB DEFAULT '{}'
 );
+
+-- Ensure columns exist if table was already present
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS sizes TEXT[] DEFAULT '{}';
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock_level INTEGER DEFAULT 10;
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
+
+-- 4. Storage Bucket for Archival Assets
+-- Note: Create 'products' bucket in Supabase dashboard for this to work
+-- Or use these SQL statements if your project supports extensions
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('products', 'products', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies (Allow public read, authenticated upload)
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'products');
+CREATE POLICY "Admin Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'products');
 
 -- 4. Create Activities Table for tracking
 CREATE TABLE IF NOT EXISTS activities (

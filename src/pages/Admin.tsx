@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PRODUCTS, CATEGORIES } from '../constants';
-import { Search, Plus, Trash2, Edit3, TrendingUp, Users, Package, ShoppingBag, BarChart3, ChevronRight, ArrowUpRight, Activity, Settings, Globe, Loader2 } from 'lucide-react';
+import { Search, Plus, Trash2, Edit3, TrendingUp, Users, Package, ShoppingBag, BarChart3, ChevronRight, ArrowUpRight, Activity, Settings, Globe, Loader2, Upload, X, FileJson } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -105,6 +105,80 @@ export const Admin: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `product-images/${fileName}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      setNewProduct(prev => ({
+        ...prev,
+        images: [publicUrl, ...prev.images.filter(img => img !== '')]
+      }));
+      alert('Archive image uploaded successfully.');
+    } catch (err: any) {
+      console.error('Upload Error:', err);
+      alert('Error uploading image: ' + (err.message || 'Check if your "products" storage bucket is created in Supabase.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const rows = text.split('\n').filter(row => row.trim() !== '');
+        // Basic CSV parsing (assuming: name, price, category, description, imageUrl)
+        const products = rows.slice(1).map(row => {
+          const [name, price, category, description, imageUrl] = row.split(',').map(s => s.trim());
+          return {
+            id: `ARCHIVE-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
+            name: name || 'Unnamed Piece',
+            price: price || '0',
+            category: category || 'Suits',
+            description: description || '',
+            images: imageUrl ? [imageUrl] : [],
+            sizes: ['M', 'L', 'XL'],
+            stock_level: 10
+          };
+        });
+
+        setIsLoading(true);
+        const { error } = await supabase.from('products').upsert(products);
+        if (!error) {
+          alert(`Successfully imported ${products.length} pieces from laptop.`);
+          fetchProducts();
+        } else {
+          alert('Import error: ' + error.message);
+        }
+      } catch (err) {
+        alert('Failed to parse file. Please use a valid CSV.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -529,13 +603,32 @@ export const Admin: React.FC = () => {
                   <h3 className="font-label-md">Object Archive</h3>
                   <p className="font-caption">Total recorded items available in digital collection</p>
                 </div>
-                <div className="relative max-w-sm w-full">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary w-4 h-4 opacity-40" />
-                  <input 
-                    className="w-full bg-white luxury-border px-12 py-4 text-[10px] font-label-md uppercase outline-none focus:border-accent transition-all" 
-                    placeholder="Reference SKU..." 
-                    type="text" 
-                  />
+                <div className="flex items-center gap-4 relative max-w-lg w-full">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary w-4 h-4 opacity-40" />
+                    <input 
+                      className="w-full bg-white luxury-border px-12 py-4 text-[10px] font-label-md uppercase outline-none focus:border-accent transition-all" 
+                      placeholder="Search Archive..." 
+                      type="text" 
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <input 
+                      type="file" 
+                      id="csv-import" 
+                      className="hidden" 
+                      accept=".csv" 
+                      onChange={handleCSVImport}
+                    />
+                    <label 
+                      htmlFor="csv-import"
+                      title="Import CSV from laptop"
+                      className="p-4 luxury-border bg-white hover:bg-primary hover:text-white transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      <FileJson className="w-4 h-4" />
+                      <span className="font-label-md text-[9px]">Import</span>
+                    </label>
+                  </div>
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -873,16 +966,60 @@ export const Admin: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="font-label-md text-[9px] opacity-40">Archival Image URL</label>
-                  <input 
-                    required
-                    type="url" 
-                    placeholder="https://images.unsplash.com/..."
-                    value={newProduct.images[0]}
-                    onChange={(e) => setNewProduct({...newProduct, images: [e.target.value]})}
-                    className="w-full bg-background/50 luxury-border px-6 py-4 font-mono text-[10px]"
-                  />
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <label className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Digital Representation</label>
+                    {newProduct.images[0] && (
+                      <button 
+                        type="button"
+                        onClick={() => setNewProduct({...newProduct, images: ['']})}
+                        className="text-[8px] font-label-md text-red-500 uppercase tracking-widest hover:opacity-100 opacity-40"
+                      >
+                        Clear Assets
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="relative">
+                      <input 
+                        type="file" 
+                        id="piece-upload"
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                      />
+                      <label 
+                        htmlFor="piece-upload"
+                        className="flex flex-col items-center justify-center gap-3 w-full h-40 luxury-border border-dashed bg-background/20 cursor-pointer hover:bg-background/40 transition-all group"
+                      >
+                        <Upload className="w-5 h-5 opacity-40 group-hover:scale-110 transition-transform" />
+                        <span className="font-label-md text-[9px] uppercase tracking-widest opacity-60">Upload from Laptop</span>
+                      </label>
+                    </div>
+
+                    <div className="w-full h-40 luxury-border bg-background/10 flex items-center justify-center overflow-hidden">
+                      {newProduct.images[0] ? (
+                        <img src={newProduct.images[0]} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="text-center space-y-2">
+                          <Globe className="w-4 h-4 mx-auto opacity-20" />
+                          <span className="font-label-md text-[8px] opacity-20 uppercase">Awaiting Asset...</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40 italic lowercase">Or link external archival source (URL)</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://images.unsplash.com/..."
+                      value={newProduct.images[0]}
+                      onChange={(e) => setNewProduct({...newProduct, images: [e.target.value]})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-mono text-[10px]"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
