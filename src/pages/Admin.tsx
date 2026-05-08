@@ -76,27 +76,33 @@ export const Admin: React.FC = () => {
 
   const seedProducts = async () => {
     setIsLoading(true);
-    const productsToSeed = PRODUCTS.map(p => ({
-      id: p.id,
-      name: p.name,
-      price: p.price.toString(),
-      category: p.category,
-      description: p.description,
-      images: p.images,
-      sizes: p.sizes,
-      stock_level: p.stockCount || 10
-    }));
+    try {
+      const productsToSeed = PRODUCTS.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price.toString(),
+        category: typeof p.category === 'object' ? (p.category as any).name : p.category,
+        description: p.description,
+        images: p.images || [],
+        sizes: p.sizes || [],
+        stock_level: p.stockCount || 10
+      }));
 
-    const { error: seedError } = await supabase.from('products').upsert(productsToSeed);
-    if (!seedError) {
-      const { data } = await supabase.from('products').select('*');
-      if (data) setDbProducts(data);
-      alert('Archive seeded successfully.');
-    } else {
-      console.error('Seed Error:', seedError);
-      alert(`Seed error: ${seedError.message}\nHint: ${seedError.hint || 'N/A'}`);
+      const { error: seedError } = await supabase.from('products').upsert(productsToSeed);
+      if (!seedError) {
+        const { data } = await supabase.from('products').select('*');
+        if (data) setDbProducts(data);
+        alert('Archive seeded successfully.');
+      } else {
+        console.error('Seed Error details:', seedError);
+        alert(`Seed error: ${seedError.message}\n\nPlease ensure your Supabase schema is up to date with the latest SQL migration.`);
+      }
+    } catch (err) {
+      console.error('Operational Seed Error:', err);
+      alert('An unexpected error occurred during seeding.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleAddProduct = async (e: React.FormEvent) => {
@@ -222,6 +228,23 @@ export const Admin: React.FC = () => {
     setSelectedItems(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
+  };
+
+  const handleWipeProducts = async () => {
+    if (!confirm('CRITICAL ACTION: This will delete ALL archival pieces from the database. This cannot be undone. Proceed?')) return;
+    
+    setIsLoading(true);
+    const { error } = await supabase.from('products').delete().neq('id', 'RESERVED_SHADOW_ID');
+    
+    if (!error) {
+      setDbProducts([]);
+      setSelectedItems([]);
+      alert('Archive wiped clean.');
+      await seedProducts(); // Auto-reseed with defaults
+    } else {
+      alert('Error wiping archive: ' + error.message);
+    }
+    setIsLoading(false);
   };
 
   const handleBulkAction = async (action: string) => {
@@ -551,7 +574,9 @@ export const Admin: React.FC = () => {
                           </div>
                           <div className="flex flex-col space-y-1">
                             <span className="font-serif text-lg italic tracking-tight">{product.name}</span>
-                            <span className="text-[9px] text-secondary font-label-md lowercase opacity-40 tracking-widest">{product.category} // {product.id}</span>
+                            <span className="text-[9px] text-secondary font-label-md lowercase opacity-40 tracking-widest">
+                              {typeof product.category === 'object' ? product.category?.name || 'Uncategorized' : product.category} // {product.id}
+                            </span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
@@ -755,6 +780,13 @@ export const Admin: React.FC = () => {
                     className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'RE-SEED CORE ARCHIVE'}
+                  </button>
+                  <button 
+                    onClick={handleWipeProducts}
+                    disabled={isLoading}
+                    className="w-full luxury-border py-4 font-label-md text-[9px] tracking-widest text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'WIPE & RESET ARCHIVE'}
                   </button>
                   <button 
                     onClick={() => { fetchProducts(); fetchActivities(); fetchSiteSettings(); }}
