@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { PRODUCTS } from '../constants';
 import { useCart } from '../lib/CartContext';
 import { Heart, ArrowLeft, Plus, Minus } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { supabase } from '../lib/supabase';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,15 @@ export const ProductDetail: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [isAdded, setIsAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [whatsappNumber, setWhatsappNumber] = useState('2347030195046');
+
+  useEffect(() => {
+    const fetchWhatsApp = async () => {
+      const { data } = await supabase.from('site_settings').select('whatsapp_number').eq('id', 1).single();
+      if (data?.whatsapp_number) setWhatsappNumber(data.whatsapp_number);
+    };
+    fetchWhatsApp();
+  }, []);
 
   const product = PRODUCTS.find(p => p.id === id);
 
@@ -33,7 +43,7 @@ export const ProductDetail: React.FC = () => {
   };
 
   const handleWhatsAppInquiry = () => {
-    const phoneNumber = "2347030195046";
+    const phoneNumber = whatsappNumber.replace(/[^0-9]/g, '');
     const brandName = localStorage.getItem('brandName') || 'aystores';
     const message = encodeURIComponent(
       `Hello ${brandName.toUpperCase()}, I'm interested in the ${product.name}${selectedSize ? ` (${selectedSize})` : ''}. Could you provide more details?`

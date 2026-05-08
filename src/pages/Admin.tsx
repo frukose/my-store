@@ -31,6 +31,7 @@ export const Admin: React.FC = () => {
     tagline: 'The pinnacle of modern digital tailoring in Nigeria.',
     currency: 'NGN',
     commission: '15%',
+    whatsappNumber: '2347030195046',
     primaryColor: '#111111',
     accentColor: '#C5A059',
   });
@@ -53,6 +54,7 @@ export const Admin: React.FC = () => {
         tagline: data.tagline,
         currency: data.currency,
         commission: data.commission,
+        whatsappNumber: data.whatsapp_number || '2347030195046',
         primaryColor: data.primary_color,
         accentColor: data.accent_color,
       });
@@ -81,6 +83,7 @@ export const Admin: React.FC = () => {
         tagline: siteSettings.tagline,
         currency: siteSettings.currency,
         commission: siteSettings.commission,
+        whatsapp_number: siteSettings.whatsappNumber,
         primary_color: siteSettings.primaryColor,
         accent_color: siteSettings.accentColor,
         updated_at: new Date().toISOString(),
@@ -519,6 +522,20 @@ export const Admin: React.FC = () => {
                       className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-16 text-center outline-none focus:border-accent"
                     />
                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Global Contact</h4>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-label-md opacity-60">WhatsApp Number</label>
+                        <input 
+                          type="text" 
+                          value={siteSettings.whatsappNumber}
+                          onChange={(e) => setSiteSettings({...siteSettings, whatsappNumber: e.target.value})}
+                          className="w-full bg-transparent border-b border-primary/10 py-3 outline-none focus:border-accent font-mono text-sm"
+                          placeholder="e.g. 2347030195046"
+                        />
+                      </div>
+                    </div>
 
                    <div className="space-y-4 pt-4">
                      <h4 className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Interface Aesthetics</h4>
