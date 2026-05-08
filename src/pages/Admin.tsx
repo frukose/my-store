@@ -1,0 +1,515 @@
+import React, { useState, useEffect } from 'react';
+import { PRODUCTS, CATEGORIES } from '../constants';
+import { Search, Plus, Trash2, Edit3, TrendingUp, Users, Package, ShoppingBag, BarChart3, ChevronRight, ArrowUpRight, Activity, Settings, Globe } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { Link } from 'react-router-dom';
+
+const MOCK_SALES_DATA = [
+  { name: 'Jan', value: 4000 },
+  { name: 'Feb', value: 3000 },
+  { name: 'Mar', value: 2000 },
+  { name: 'Apr', value: 2780 },
+  { name: 'May', value: 1890 },
+  { name: 'Jun', value: 2390 },
+  { name: 'Jul', value: 3490 },
+];
+
+const MOCK_ACTIVITIES = [
+  { id: '1', user: 'Farouk A.', action: 'placed a new order', time: '2 mins ago', type: 'order', amount: '₦145,000' },
+  { id: '2', user: 'Sarah O.', action: 'viewed Structured Blazer', time: '15 mins ago', type: 'view' },
+  { id: '3', user: 'Adeshola K.', action: 'added item to cart', time: '1 hour ago', type: 'cart' },
+  { id: '4', user: 'System', action: 'inventory sync completed', time: '2 hours ago', type: 'system' },
+  { id: '5', user: 'James W.', action: 'placed a new order', time: '5 hours ago', type: 'order', amount: '₦58,000' },
+];
+
+export const Admin: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'inventory' | 'activity' | 'settings'>('dashboard');
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const [siteSettings, setSiteSettings] = useState({
+    brandName: 'aystores',
+    tagline: 'The pinnacle of modern digital tailoring in Nigeria.',
+    currency: 'NGN',
+    commission: '15%',
+    primaryColor: '#111111',
+    accentColor: '#C5A059',
+  });
+
+  useEffect(() => {
+    // Load persisted colors
+    const savedPrimary = localStorage.getItem('primaryColor');
+    const savedAccent = localStorage.getItem('accentColor');
+    if (savedPrimary || savedAccent) {
+      setSiteSettings(prev => ({
+        ...prev,
+        primaryColor: savedPrimary || prev.primaryColor,
+        accentColor: savedAccent || prev.accentColor,
+      }));
+    }
+  }, []);
+
+  const applyColors = () => {
+    document.documentElement.style.setProperty('--primary-color', siteSettings.primaryColor);
+    document.documentElement.style.setProperty('--accent-color', siteSettings.accentColor);
+    localStorage.setItem('primaryColor', siteSettings.primaryColor);
+    localStorage.setItem('accentColor', siteSettings.accentColor);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.length === PRODUCTS.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(PRODUCTS.map(p => p.id));
+    }
+  };
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkAction = (action: string) => {
+    alert(`Bulk ${action} for ${selectedItems.length} items`);
+    // In a real app, this would trigger an API call
+    setSelectedItems([]);
+  };
+
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'studio2024';
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setError(false);
+    } else {
+      setError(true);
+      setPassword('');
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="luxury-card max-w-sm w-full space-y-12 py-16"
+        >
+          <div className="text-center space-y-4">
+            <span className="font-label-md text-accent tracking-[0.4em] lowercase italic">Restricted Access</span>
+            <h2 className="font-display-md text-4xl italic">Studio Entry</h2>
+            <div className="luxury-line w-12 mx-auto opacity-30" />
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-8">
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="ENTER ACCESS KEY"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={cn(
+                  "w-full bg-background/50 luxury-border px-6 py-4 text-center font-label-md text-xs tracking-widest outline-none focus:border-primary transition-all",
+                  error && "border-red-400 placeholder:text-red-400"
+                )}
+              />
+              {error && (
+                <p className="text-[9px] font-label-md text-red-500 text-center lowercase italic">Invalid credentials. Archive locked.</p>
+              )}
+            </div>
+            <button 
+              type="submit"
+              className="w-full bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all duration-500"
+            >
+              Verify Identity
+            </button>
+          </form>
+          
+          <div className="text-center">
+            <Link to="/" className="font-label-md text-[8px] opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest">Return to Public Interface</Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: 'Total Revenue', value: '₦4,250,000', icon: TrendingUp, change: '+12.5%', color: 'text-accent' },
+    { label: 'Active Sessions', value: '1,284', icon: Users, change: '+5.2%', color: 'text-primary' },
+    { label: 'Total Items', value: PRODUCTS.length, icon: Package, change: 'Stable', color: 'text-primary' },
+    { label: 'Orders (Mo)', value: '142', icon: ShoppingBag, change: '+18%', color: 'text-accent' },
+  ];
+
+  return (
+    <div className="p-6 md:p-12 space-y-12 max-w-[1700px] mx-auto pb-40">
+      {/* Editorial Header */}
+      <section className="space-y-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+          <div className="space-y-4">
+            <span className="font-label-md text-accent tracking-[0.4em] lowercase italic">Studio Management Interface</span>
+            <h1 className="font-display-md text-6xl italic">The Control Archive</h1>
+          </div>
+          
+          <div className="flex gap-4">
+            <button className=" luxury-border px-8 py-4 font-label-md text-[10px] bg-primary text-white hover:bg-accent transition-all duration-500 flex items-center gap-3">
+              <Plus className="w-4 h-4" />
+              New Collection Object
+            </button>
+          </div>
+        </div>
+        <div className="luxury-line opacity-30" />
+      </section>
+
+      {/* Internal Navigation */}
+      <nav className="flex gap-12 border-b border-on-background/5 pb-6 overflow-x-auto no-scrollbar">
+        {[
+          { id: 'dashboard', label: 'Index / Metrics', icon: BarChart3 },
+          { id: 'inventory', label: 'Inventory / Objects', icon: Package },
+          { id: 'activity', label: 'Activity / Tracking', icon: Activity },
+          { id: 'settings', label: 'Settings / Config', icon: Settings },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={cn(
+              "font-label-md text-[10px] tracking-[0.2em] flex items-center gap-3 transition-all relative shrink-0",
+              activeTab === tab.id ? "text-primary pb-6" : "text-secondary opacity-40 hover:opacity-100"
+            )}
+          >
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+            {activeTab === tab.id && (
+              <motion.div layoutId="tab-underline" className="absolute bottom-[-1px] left-0 w-full h-px bg-primary" />
+            )}
+          </button>
+        ))}
+      </nav>
+
+      <AnimatePresence mode="wait">
+        {activeTab === 'dashboard' && (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-12"
+          >
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {stats.map((stat, idx) => (
+                <div key={idx} className="luxury-card space-y-6 bg-white/50 backdrop-blur-sm">
+                  <div className="flex justify-between items-start">
+                    <stat.icon className={cn("w-5 h-5 opacity-40", stat.color)} />
+                    <span className="font-label-md text-[9px] text-accent font-black tracking-widest">{stat.change}</span>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="font-label-md text-[10px] text-secondary lowercase italic">{stat.label}</p>
+                    <p className="font-serif text-3xl italic">{stat.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Sales Chart Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <div className="lg:col-span-8 luxury-card min-h-[400px] flex flex-col space-y-8">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-label-md">Revenue Trajectory</h3>
+                  <div className="flex gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-accent" />
+                      <span className="font-label-md text-[8px] opacity-40">Trajectory</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-grow">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={MOCK_SALES_DATA}>
+                      <defs>
+                        <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#C5A059" stopOpacity={0.2}/>
+                          <stop offset="95%" stopColor="#C5A059" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="name" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 10, fill: '#717171', fontWeight: 500, fontFamily: 'Inter' }}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fontSize: 10, fill: '#717171', fontWeight: 500, fontFamily: 'Inter' }}
+                      />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '0px', border: '1px solid rgba(0,0,0,0.1)', fontFamily: 'Inter', fontSize: '12px' }}
+                      />
+                      <Area type="monotone" dataKey="value" stroke="#C5A059" fillOpacity={1} fill="url(#colorVal)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="lg:col-span-4 space-y-8">
+                <div className="luxury-card space-y-8">
+                  <h3 className="font-label-md">Recent Events</h3>
+                  <div className="space-y-6">
+                    {MOCK_ACTIVITIES.slice(0, 3).map((act) => (
+                      <div key={act.id} className="flex gap-4 group cursor-pointer border-l border-on-background/5 pl-4 hover:border-accent transition-all">
+                        <div className="flex-1 space-y-1">
+                          <p className="font-serif text-sm italic">{act.user} <span className="not-italic text-secondary opacity-60 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-label-md text-[8px] opacity-40 uppercase tracking-widest">{act.time}</p>
+                        </div>
+                        <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-all self-center" />
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={() => setActiveTab('activity')} className="w-full py-4 luxury-border font-label-md text-[9px] hover:bg-primary hover:text-white transition-all">
+                    Open Activity Archive
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'inventory' && (
+          <motion.div key="inventory" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
+            <div className="luxury-card p-0 overflow-hidden relative">
+              {selectedItems.length > 0 && (
+                <motion.div 
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 bg-primary text-white px-8 py-4 flex items-center gap-8 luxury-border shadow-2xl"
+                >
+                  <span className="font-label-md text-[10px] tracking-widest">{selectedItems.length} Objects Selected</span>
+                  <div className="w-px h-4 bg-white/20" />
+                  <div className="flex gap-6">
+                    <button onClick={() => handleBulkAction('Update Stock')} className="font-label-md text-[9px] hover:text-accent transition-colors">Sync Stock</button>
+                    <button onClick={() => handleBulkAction('Price Adjustment')} className="font-label-md text-[9px] hover:text-accent transition-colors">Adjust Price</button>
+                    <button onClick={() => handleBulkAction('Delete')} className="font-label-md text-[9px] text-red-300 hover:text-red-100 transition-colors">Delete Archive</button>
+                  </div>
+                  <div className="w-px h-4 bg-white/20" />
+                  <button onClick={() => setSelectedItems([])} className="font-label-md text-[9px] opacity-60 hover:opacity-100 uppercase italic">Cancel</button>
+                </motion.div>
+              )}
+
+              <div className="p-8 border-b border-on-background/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-background/30">
+                <div className="space-y-1">
+                  <h3 className="font-label-md">Object Archive</h3>
+                  <p className="font-caption">Total recorded items available in digital collection</p>
+                </div>
+                <div className="relative max-w-sm w-full">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary w-4 h-4 opacity-40" />
+                  <input 
+                    className="w-full bg-white luxury-border px-12 py-4 text-[10px] font-label-md uppercase outline-none focus:border-accent transition-all" 
+                    placeholder="Reference SKU..." 
+                    type="text" 
+                  />
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-background/20 font-label-md text-[9px] text-secondary border-b border-on-background/5">
+                      <th className="px-8 py-6 w-12">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedItems.length === PRODUCTS.length}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 luxury-border accent-primary cursor-pointer"
+                        />
+                      </th>
+                      <th className="px-8 py-6">Reference Piece</th>
+                      <th className="px-8 py-6">Stock Level</th>
+                      <th className="px-8 py-6">Price Points</th>
+                      <th className="px-8 py-6 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-on-background/5 font-sans">
+                    {PRODUCTS.map((product) => (
+                      <tr key={product.id} className={cn(
+                        "hover:bg-background/40 transition-colors group",
+                        selectedItems.includes(product.id) && "bg-primary/5"
+                      )}>
+                        <td className="px-8 py-6">
+                          <input 
+                            type="checkbox" 
+                            checked={selectedItems.includes(product.id)}
+                            onChange={() => toggleSelectItem(product.id)}
+                            className="w-4 h-4 luxury-border accent-primary cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-8 py-6 flex items-center gap-6">
+                          <div className="w-16 h-20 bg-background luxury-border overflow-hidden shrink-0">
+                            <img src={product.images[0]} alt="" className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" />
+                          </div>
+                          <div className="flex flex-col space-y-1">
+                            <span className="font-serif text-lg italic tracking-tight">{product.name}</span>
+                            <span className="text-[9px] text-secondary font-label-md lowercase opacity-40 tracking-widest">{product.category} // {product.sku}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                           <input 
+                            type="number" 
+                            defaultValue={product.stockCount}
+                            className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-16 text-center outline-none focus:border-accent"
+                          />
+                          <span className="font-label-md text-[8px] opacity-40 ml-2">units</span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                             <span className="font-serif text-lg italic tracking-tight">₦</span>
+                             <input 
+                              type="text" 
+                              defaultValue={product.price.toLocaleString()}
+                              className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-28 outline-none focus:border-accent"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <div className="flex justify-center gap-4">
+                             <button title="Update Entry" className="p-3 luxury-border bg-white hover:bg-primary hover:text-white transition-all"><Globe className="w-4 h-4" /></button>
+                             <button title="Delete Entry" className="p-3 luxury-border bg-white hover:bg-accent hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'activity' && (
+          <motion.div key="activity" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
+             <div className="luxury-card space-y-8">
+               <div className="flex justify-between items-end">
+                 <h3 className="font-label-md">Studio Activity Feed</h3>
+                 <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <span className="font-label-md text-[9px] opacity-60">Streaming Live Tracking</span>
+                 </div>
+               </div>
+               
+               <div className="space-y-4">
+                 {MOCK_ACTIVITIES.map((act) => (
+                   <div key={act.id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-6 luxury-border bg-white/30 gap-4">
+                     <div className="flex items-center gap-6">
+                        <div className={cn(
+                          "w-10 h-10 flex items-center justify-center luxury-border",
+                          act.type === 'order' ? "bg-accent text-white" : "bg-primary/5"
+                        )}>
+                          {act.type === 'order' ? <ShoppingBag className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-serif text-lg italic">{act.user} <span className="not-italic opacity-60 ml-2 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-label-md text-[9px] opacity-40 uppercase tracking-[0.2em]">{act.time}</p>
+                        </div>
+                     </div>
+                     {act.amount && <span className="font-serif text-2xl italic text-primary">{act.amount}</span>}
+                   </div>
+                 ))}
+               </div>
+             </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'settings' && (
+          <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="luxury-card space-y-8">
+                <h3 className="font-label-md">Public Brand Identity</h3>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Store Identity</label>
+                    <input 
+                      type="text" 
+                      value={siteSettings.brandName}
+                      onChange={(e) => setSiteSettings({...siteSettings, brandName: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-serif italic text-2xl outline-none focus:border-accent transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-label-md text-[9px] opacity-40">Tagline / Mission</label>
+                    <textarea 
+                      rows={3}
+                      value={siteSettings.tagline}
+                      onChange={(e) => setSiteSettings({...siteSettings, tagline: e.target.value})}
+                      className="w-full bg-background/50 luxury-border px-6 py-4 font-sans text-sm resize-none outline-none focus:border-accent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="luxury-card space-y-8">
+                <h3 className="font-label-md">Global Preferences</h3>
+                <div className="space-y-6">
+                   <div className="flex justify-between items-center py-4 border-b border-on-background/5">
+                     <span className="font-label-md text-xs">Primary Currency</span>
+                     <span className="font-serif italic text-xl">Nigerian Naira (₦)</span>
+                   </div>
+                   <div className="flex justify-between items-center py-4 border-b border-on-background/5">
+                     <span className="font-label-md text-xs">Studio Platform Fee</span>
+                     <input 
+                      type="text" 
+                      value={siteSettings.commission}
+                      onChange={(e) => setSiteSettings({...siteSettings, commission: e.target.value})}
+                      className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-16 text-center outline-none focus:border-accent"
+                    />
+                   </div>
+
+                   <div className="space-y-4 pt-4">
+                     <h4 className="font-label-md text-[9px] opacity-40 uppercase tracking-widest">Interface Aesthetics</h4>
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="space-y-2">
+                         <label className="text-[10px] font-label-md opacity-60">Primary</label>
+                         <div className="flex items-center gap-3">
+                           <input 
+                            type="color" 
+                            value={siteSettings.primaryColor}
+                            onChange={(e) => setSiteSettings({...siteSettings, primaryColor: e.target.value})}
+                            className="w-8 h-8 rounded-full border-0 p-0 cursor-pointer overflow-hidden"
+                          />
+                          <span className="font-mono text-[10px] uppercase opacity-40">{siteSettings.primaryColor}</span>
+                         </div>
+                       </div>
+                       <div className="space-y-2">
+                         <label className="text-[10px] font-label-md opacity-60">Accent</label>
+                         <div className="flex items-center gap-3">
+                           <input 
+                            type="color" 
+                            value={siteSettings.accentColor}
+                            onChange={(e) => setSiteSettings({...siteSettings, accentColor: e.target.value})}
+                            className="w-8 h-8 rounded-full border-0 p-0 cursor-pointer overflow-hidden"
+                          />
+                          <span className="font-mono text-[10px] uppercase opacity-40">{siteSettings.accentColor}</span>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                </div>
+                <button 
+                  onClick={applyColors}
+                  className="w-full bg-primary text-white py-5 font-label-md text-[10px] tracking-[0.3em] hover:bg-accent transition-all duration-500 uppercase"
+                >
+                  Synchronize Studio Config
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+

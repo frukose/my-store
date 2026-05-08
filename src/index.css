@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --primary-color: #111111;
+  --accent-color: #C5A059;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-mono: "Space Grotesk", ui-monospace, monospace;
+
+  --color-surface: #ffffff;
+  --color-background: #F9F8F6;
+  --color-on-background: #111111;
+  --color-primary: var(--primary-color);
+  --color-on-primary: #ffffff;
+  --color-accent: var(--accent-color);
+  --color-on-accent: #ffffff;
+  --color-border-main: rgba(17, 17, 17, 0.1);
+  --color-secondary: #717171;
+  
+  --spacing-container-margin: 32px;
+  --spacing-gutter: 24px;
+  --spacing-section-gap: 80px;
+  --spacing-stack-sm: 12px;
+  --spacing-stack-md: 24px;
+  --spacing-stack-lg: 48px;
+
+  --radius-bento: 0px;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-on-background font-sans antialiased selection:bg-accent selection:text-on-accent;
+  }
+}
+
+@layer utilities {
+  .luxury-border {
+    @apply border border-on-background/10;
+  }
+  .luxury-card {
+    @apply bg-surface border border-on-background/5 p-8 transition-all duration-500 hover:border-on-background/20;
+  }
+  .luxury-line {
+    @apply h-px w-full bg-on-background/10;
+  }
+  .font-display-lg {
+    @apply font-serif text-6xl md:text-8xl font-normal leading-[1.1] tracking-tight;
+  }
+  .font-display-md {
+    @apply font-serif text-4xl md:text-5xl font-medium leading-[1.2];
+  }
+  .font-headline-lg {
+    @apply font-sans text-2xl font-semibold tracking-tight;
+  }
+  .font-body-lg {
+    @apply font-serif text-xl font-light italic leading-relaxed text-secondary;
+  }
+  .font-body-md {
+    @apply font-sans text-base font-normal leading-relaxed;
+  }
+  .font-label-md {
+    @apply font-sans text-[11px] font-medium leading-none tracking-[0.25em] uppercase;
+  }
+  .font-caption {
+    @apply font-sans text-[10px] font-normal uppercase tracking-widest opacity-50;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+}
