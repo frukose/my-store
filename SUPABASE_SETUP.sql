@@ -41,17 +41,18 @@ CREATE TABLE IF NOT EXISTS products (
 -- Migration: Ensure all columns exist for products if table was created previously
 DO $$ 
 BEGIN 
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='stock_level') THEN
-        ALTER TABLE products ADD COLUMN stock_level INTEGER DEFAULT 10;
+    -- Ensure columns exist in the public schema
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='stock_level') THEN
+        ALTER TABLE public.products ADD COLUMN stock_level INTEGER DEFAULT 10;
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='description') THEN
-        ALTER TABLE products ADD COLUMN description TEXT;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='description') THEN
+        ALTER TABLE public.products ADD COLUMN description TEXT;
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='images') THEN
-        ALTER TABLE products ADD COLUMN images TEXT[];
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='images') THEN
+        ALTER TABLE public.products ADD COLUMN images TEXT[];
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='products' AND column_name='sizes') THEN
-        ALTER TABLE products ADD COLUMN sizes TEXT[];
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='products' AND column_name='sizes') THEN
+        ALTER TABLE public.products ADD COLUMN sizes TEXT[];
     END IF;
 END $$;
 

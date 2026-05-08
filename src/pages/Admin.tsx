@@ -454,7 +454,12 @@ export const Admin: React.FC = () => {
                     {dbActivities.slice(0, 3).map((act) => (
                       <div key={act.id} className="flex gap-4 group cursor-pointer border-l border-on-background/5 pl-4 hover:border-accent transition-all">
                         <div className="flex-1 space-y-1">
-                          <p className="font-serif text-sm italic">{act.username} <span className="not-italic text-secondary opacity-60 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-serif text-sm italic">
+                            {typeof act.username === 'object' ? act.username.name || 'User' : act.username} 
+                            <span className="not-italic text-secondary opacity-60 font-sans text-xs">
+                              {typeof act.action === 'object' ? 'performed an action' : act.action}
+                            </span>
+                          </p>
                           <p className="font-label-md text-[8px] opacity-40 uppercase tracking-widest">{new Date(act.created_at).toLocaleTimeString()}</p>
                         </div>
                         <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-all self-center" />
@@ -617,7 +622,12 @@ export const Admin: React.FC = () => {
                           {act.type === 'order' ? <ShoppingBag className="w-4 h-4" /> : <Activity className="w-4 h-4" />}
                         </div>
                         <div className="space-y-1">
-                          <p className="font-serif text-lg italic">{act.username} <span className="not-italic opacity-60 ml-2 font-sans text-xs">{act.action}</span></p>
+                          <p className="font-serif text-lg italic">
+                            {typeof act.username === 'object' ? act.username.name || 'User' : act.username} 
+                            <span className="not-italic opacity-60 ml-2 font-sans text-xs">
+                              {typeof act.action === 'object' ? 'performed an action' : act.action}
+                            </span>
+                          </p>
                           <p className="font-label-md text-[9px] opacity-40 uppercase tracking-[0.2em]">{new Date(act.created_at).toLocaleString()}</p>
                         </div>
                      </div>
@@ -824,7 +834,7 @@ export const Admin: React.FC = () => {
                       onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
                       className="w-full bg-background/50 luxury-border px-6 py-4 font-label-md text-[10px] appearance-none"
                     >
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      {CATEGORIES.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                     </select>
                   </div>
                 </div>
