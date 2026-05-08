@@ -1,14 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../lib/CartContext';
-import { PRODUCTS } from '../constants';
-import { Trash2, ArrowLeft, Plus, Minus } from 'lucide-react';
+import { Trash2, ArrowLeft, Plus, Minus, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { Product } from '../types';
 
 export const Cart: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, cartCount } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [whatsappNumber, setWhatsappNumber] = useState('2347030195046');
+
+  useEffect(() => {
+    const fetchCartData = async () => {
+      setIsLoading(true);
+      
+      // Fetch WhatsApp and Products in parallel
+      const [settingsRes, productsRes] = await Promise.all([
+        supabase.from('site_settings').select('whatsapp_number').eq('id', 1).single(),
+        supabase.from('products').select('*')
+      ]);
+
+      if (settingsRes.data?.whatsapp_number) setWhatsappNumber(settingsRes.data.whatsapp_number);
+      
+      if (productsRes.data) {
+        setProducts(productsRes.data.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          description: p.description || '',
+          category: p.category as any,
+          images: p.images || [],
+          sizes: p.sizes || [],
+          colors: [],
+          stockCount: p.stock_level,
+          inStock: p.stock_level > 0,
+          sku: `PIECE-${p.id}`
+        })));
+      }
+      setIsLoading(false);
+    };
+
+    fetchCartData();
+  }, []);
 
   const cartItems = cart.map(item => {
-    const product = PRODUCTS.find(p => p.id === item.productId);
+    const product = products.find(p => p.id === item.productId);
     return { ...item, product };
   });
 
@@ -17,17 +54,26 @@ export const Cart: React.FC = () => {
   }, 0);
 
   const handleWhatsAppCheckout = () => {
-    const phoneNumber = "2347030195046";
+    const phoneNumber = whatsappNumber.replace(/[^0-9]/g, '');
+    const brandName = localStorage.getItem('brandName') || 'aystores';
     const itemsList = cartItems.map(item => 
       `- ${item.product?.name} (${item.selectedSize}) x${item.quantity}: ₦${((item.product?.price || 0) * item.quantity).toLocaleString()}`
     ).join('\n');
     
     const message = encodeURIComponent(
-      `Hello AYSTORES, I'd like to place an order from the Studio:\n\n${itemsList}\n\n*Total: ₦${subtotal.toLocaleString()}*`
+      `Hello ${brandName.toUpperCase()}, I'd like to place an order from the Studio:\n\n${itemsList}\n\n*Total: ₦${subtotal.toLocaleString()}*`
     );
     
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   if (cart.length === 0) {
     return (

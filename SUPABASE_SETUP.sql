@@ -25,7 +25,20 @@ VALUES (1, 'aystores', 'The pinnacle of modern digital tailoring in Nigeria.', '
 ON CONFLICT (id) DO UPDATE SET 
     whatsapp_number = COALESCE(site_settings.whatsapp_number, EXCLUDED.whatsapp_number);
 
--- 3. Create Activities Table for tracking
+-- 3. Create Products Table
+CREATE TABLE IF NOT EXISTS products (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    price TEXT NOT NULL,
+    category TEXT NOT NULL,
+    description TEXT,
+    images TEXT[], -- Array of image URLs
+    sizes TEXT[],
+    stock_level INTEGER DEFAULT 10,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Create Activities Table for tracking
 CREATE TABLE IF NOT EXISTS activities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username TEXT NOT NULL,
@@ -35,12 +48,12 @@ CREATE TABLE IF NOT EXISTS activities (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
--- 5. Create Policies
--- Note: In production, you would restrict UPDATE/INSERT to authenticated users only.
+-- 6. Create Policies
 DO $$ 
 BEGIN
     -- Settings Policies
@@ -57,5 +70,13 @@ BEGIN
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow insert of activities') THEN
         CREATE POLICY "Allow insert of activities" ON activities FOR INSERT WITH CHECK (true);
+    END IF;
+
+    -- Products Policies
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow public read of products') THEN
+        CREATE POLICY "Allow public read of products" ON products FOR SELECT USING (true);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow admin write of products') THEN
+        CREATE POLICY "Allow admin write of products" ON products FOR ALL USING (true); -- Simplified for this setup
     END IF;
 END $$;

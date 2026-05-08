@@ -1,16 +1,56 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PRODUCTS } from '../constants';
 import { ProductCard } from '../components/ProductCard';
-import { ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Product } from '../types';
 
 export const Shop: React.FC = () => {
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get('category');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        setProducts(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          description: p.description || '',
+          category: p.category as any,
+          images: p.images || [],
+          sizes: p.sizes || [],
+          colors: [],
+          stockCount: p.stock_level,
+          inStock: p.stock_level > 0,
+          sku: `PIECE-${p.id}`
+        })));
+      }
+      setIsLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
   
   const filteredProducts = categoryFilter 
-    ? PRODUCTS.filter(p => p.category === categoryFilter)
-    : PRODUCTS;
+    ? products.filter(p => p.category === categoryFilter)
+    : products;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="px-6 md:px-12 max-w-[1700px] mx-auto pb-32">

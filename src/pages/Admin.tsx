@@ -25,6 +25,7 @@ export const Admin: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dbActivities, setDbActivities] = useState<any[]>([]);
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
 
   const [siteSettings, setSiteSettings] = useState({
     brandName: 'aystores',
@@ -39,7 +40,41 @@ export const Admin: React.FC = () => {
   useEffect(() => {
     fetchSiteSettings();
     fetchActivities();
+    fetchProducts();
   }, [isAuthenticated]);
+
+  const fetchProducts = async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (data && data.length > 0) {
+      setDbProducts(data);
+    } else {
+      // Seed from constants if empty
+      await seedProducts();
+    }
+  };
+
+  const seedProducts = async () => {
+    const productsToSeed = PRODUCTS.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price.toString(),
+      category: p.category,
+      description: p.description,
+      images: p.images,
+      sizes: p.sizes,
+      stock_level: p.stockCount || 10
+    }));
+
+    const { error } = await supabase.from('products').insert(productsToSeed);
+    if (!error) {
+      const { data } = await supabase.from('products').select('*');
+      if (data) setDbProducts(data);
+    }
+  };
 
   const fetchSiteSettings = async () => {
     const { data, error } = await supabase
@@ -108,10 +143,10 @@ export const Admin: React.FC = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedItems.length === PRODUCTS.length) {
+    if (selectedItems.length === dbProducts.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(PRODUCTS.map(p => p.id));
+      setSelectedItems(dbProducts.map(p => p.id));
     }
   };
 
@@ -121,10 +156,46 @@ export const Admin: React.FC = () => {
     );
   };
 
-  const handleBulkAction = (action: string) => {
-    alert(`Bulk ${action} for ${selectedItems.length} items`);
-    // In a real app, this would trigger an API call
-    setSelectedItems([]);
+  const handleBulkAction = async (action: string) => {
+    if (action === 'Delete') {
+      if (!confirm(`Are you sure you want to delete ${selectedItems.length} objects from the archive?`)) return;
+      
+      setIsLoading(true);
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .in('id', selectedItems);
+      
+      if (!error) {
+        setDbProducts(prev => prev.filter(p => !selectedItems.includes(p.id)));
+        setSelectedItems([]);
+        alert('Items deleted successfully.');
+      } else {
+        alert('Error deleting items: ' + error.message);
+      }
+      setIsLoading(false);
+    } else {
+      alert(`Bulk ${action} for ${selectedItems.length} items`);
+      setSelectedItems([]);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this piece from the archive?')) return;
+    
+    setIsLoading(true);
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+    
+    if (!error) {
+      setDbProducts(prev => prev.filter(p => p.id !== id));
+      alert('Product deleted successfully.');
+    } else {
+      alert('Error deleting product: ' + error.message);
+    }
+    setIsLoading(false);
   };
 
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'studio2024';
@@ -189,7 +260,7 @@ export const Admin: React.FC = () => {
   const stats = [
     { label: 'Total Revenue', value: '₦4,250,000', icon: TrendingUp, change: '+12.5%', color: 'text-accent' },
     { label: 'Active Sessions', value: '1,284', icon: Users, change: '+5.2%', color: 'text-primary' },
-    { label: 'Total Items', value: PRODUCTS.length, icon: Package, change: 'Stable', color: 'text-primary' },
+    { label: 'Total Items', value: dbProducts.length, icon: Package, change: 'Stable', color: 'text-primary' },
     { label: 'Orders (Mo)', value: '142', icon: ShoppingBag, change: '+18%', color: 'text-accent' },
   ];
 
@@ -373,7 +444,7 @@ export const Admin: React.FC = () => {
                       <th className="px-8 py-6 w-12">
                         <input 
                           type="checkbox" 
-                          checked={selectedItems.length === PRODUCTS.length}
+                          checked={selectedItems.length === dbProducts.length && dbProducts.length > 0}
                           onChange={toggleSelectAll}
                           className="w-4 h-4 luxury-border accent-primary cursor-pointer"
                         />
@@ -385,7 +456,7 @@ export const Admin: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-on-background/5 font-sans">
-                    {PRODUCTS.map((product) => (
+                    {dbProducts.map((product) => (
                       <tr key={product.id} className={cn(
                         "hover:bg-background/40 transition-colors group",
                         selectedItems.includes(product.id) && "bg-primary/5"
@@ -400,17 +471,17 @@ export const Admin: React.FC = () => {
                         </td>
                         <td className="px-8 py-6 flex items-center gap-6">
                           <div className="w-16 h-20 bg-background luxury-border overflow-hidden shrink-0">
-                            <img src={product.images[0]} alt="" className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" />
+                            <img src={product.images?.[0]} alt="" className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-700" />
                           </div>
                           <div className="flex flex-col space-y-1">
                             <span className="font-serif text-lg italic tracking-tight">{product.name}</span>
-                            <span className="text-[9px] text-secondary font-label-md lowercase opacity-40 tracking-widest">{product.category} // {product.sku}</span>
+                            <span className="text-[9px] text-secondary font-label-md lowercase opacity-40 tracking-widest">{product.category} // {product.id}</span>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                            <input 
                             type="number" 
-                            defaultValue={product.stockCount}
+                            defaultValue={product.stock_level}
                             className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-16 text-center outline-none focus:border-accent"
                           />
                           <span className="font-label-md text-[8px] opacity-40 ml-2">units</span>
@@ -420,7 +491,7 @@ export const Admin: React.FC = () => {
                              <span className="font-serif text-lg italic tracking-tight">₦</span>
                              <input 
                               type="text" 
-                              defaultValue={product.price.toLocaleString()}
+                              defaultValue={Number(product.price).toLocaleString()}
                               className="bg-transparent border-b border-primary/10 font-serif italic text-xl w-28 outline-none focus:border-accent"
                             />
                           </div>
@@ -428,11 +499,24 @@ export const Admin: React.FC = () => {
                         <td className="px-8 py-6 text-center">
                           <div className="flex justify-center gap-4">
                              <button title="Update Entry" className="p-3 luxury-border bg-white hover:bg-primary hover:text-white transition-all"><Globe className="w-4 h-4" /></button>
-                             <button title="Delete Entry" className="p-3 luxury-border bg-white hover:bg-accent hover:text-white transition-all"><Trash2 className="w-4 h-4" /></button>
+                             <button 
+                              onClick={() => handleDeleteProduct(product.id)}
+                              title="Delete Entry" 
+                              className="p-3 luxury-border bg-white hover:bg-accent hover:text-white transition-all text-red-500 hover:text-white"
+                             >
+                                <Trash2 className="w-4 h-4" />
+                             </button>
                           </div>
                         </td>
                       </tr>
                     ))}
+                    {dbProducts.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-8 py-20 text-center font-label-md opacity-40 italic">
+                          No products found in the database.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

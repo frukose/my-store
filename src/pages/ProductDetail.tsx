@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { PRODUCTS } from '../constants';
 import { useCart } from '../lib/CartContext';
-import { Heart, ArrowLeft, Plus, Minus } from 'lucide-react';
+import { Heart, ArrowLeft, Plus, Minus, Loader2 } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
 import { supabase } from '../lib/supabase';
+import { Product } from '../types';
 
 export const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,16 +14,75 @@ export const ProductDetail: React.FC = () => {
   const [isAdded, setIsAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [whatsappNumber, setWhatsappNumber] = useState('2347030195046');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedItems, setRelatedItems] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchWhatsApp = async () => {
-      const { data } = await supabase.from('site_settings').select('whatsapp_number').eq('id', 1).single();
-      if (data?.whatsapp_number) setWhatsappNumber(data.whatsapp_number);
-    };
-    fetchWhatsApp();
-  }, []);
+    const fetchPageData = async () => {
+      setIsLoading(true);
+      
+      // Fetch WhatsApp
+      const { data: settingsData } = await supabase.from('site_settings').select('whatsapp_number').eq('id', 1).single();
+      if (settingsData?.whatsapp_number) setWhatsappNumber(settingsData.whatsapp_number);
 
-  const product = PRODUCTS.find(p => p.id === id);
+      // Fetch Product
+      const { data: productData } = await supabase.from('products').select('*').eq('id', id).single();
+      
+      if (productData) {
+        const mappedProduct: Product = {
+          id: productData.id,
+          name: productData.name,
+          price: Number(productData.price),
+          description: productData.description || '',
+          category: productData.category as any,
+          images: productData.images || [],
+          sizes: productData.sizes || [],
+          colors: [],
+          stockCount: productData.stock_level,
+          inStock: productData.stock_level > 0,
+          sku: `PIECE-${productData.id}`,
+          story: productData.description // Use description as story if story field absent in DB
+        };
+        setProduct(mappedProduct);
+
+        // Fetch Related Items
+        const { data: relatedData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('category', mappedProduct.category)
+          .neq('id', mappedProduct.id)
+          .limit(4);
+
+        if (relatedData) {
+          setRelatedItems(relatedData.map(p => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            description: p.description || '',
+            category: p.category as any,
+            images: p.images || [],
+            sizes: p.sizes || [],
+            colors: [],
+            stockCount: p.stock_level,
+            inStock: p.stock_level > 0,
+            sku: `PIECE-${p.id}`
+          })));
+        }
+      }
+      setIsLoading(false);
+    };
+
+    if (id) fetchPageData();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   if (!product) return <Navigate to="/shop" />;
 
@@ -50,8 +109,6 @@ export const ProductDetail: React.FC = () => {
     );
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
-
-  const relatedItems = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id);
 
   return (
     <div className="px-6 md:px-12 max-w-[1700px] mx-auto pb-40">

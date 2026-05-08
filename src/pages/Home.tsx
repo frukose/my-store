@@ -1,13 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { PRODUCTS } from '../constants';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { ProductCard } from '../components/ProductCard';
+import { supabase } from '../lib/supabase';
+import { Product } from '../types';
 
 export const Home: React.FC = () => {
-  const heroProduct = PRODUCTS[3]; // Atelier Structured Blazer
-  const features = PRODUCTS.slice(0, 3);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHomeProducts = async () => {
+      setIsLoading(true);
+      const { data } = await supabase.from('products').select('*').limit(4);
+      if (data) {
+        setProducts(data.map(p => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          description: p.description || '',
+          category: p.category as any,
+          images: p.images || [],
+          sizes: p.sizes || [],
+          colors: [],
+          stockCount: p.stock_level,
+          inStock: p.stock_level > 0,
+          sku: `PIECE-${p.id}`
+        })));
+      }
+      setIsLoading(false);
+    };
+    fetchHomeProducts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  const heroProduct = products[3] || products[0]; 
+  const features = products.slice(0, 3);
 
   return (
     <div className="space-y-section-gap pb-32">
@@ -44,25 +80,31 @@ export const Home: React.FC = () => {
           </div>
 
           <div className="lg:col-span-6 relative">
-            <motion.div 
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="aspect-[4/5] relative group"
-            >
-              <div className="absolute inset-0 bg-accent/5 -translate-x-6 translate-y-6 transition-transform group-hover:-translate-x-4 group-hover:translate-y-4 duration-700" />
-              <img 
-                src={heroProduct.images[0]} 
-                alt="Editorial Highlight" 
-                className="w-full h-full object-cover relative z-10 filter grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
-              />
-              <div className="absolute bottom-12 -right-12 z-20 bg-surface px-8 py-6 luxury-border md:block hidden">
-                <span className="font-label-md text-accent block mb-2">Highlight Piece</span>
-                <h3 className="font-serif text-2xl italic">{heroProduct.name}</h3>
-                <div className="luxury-line my-4" />
-                <span className="font-label-md tracking-tighter text-primary">₦{heroProduct.price.toLocaleString()}</span>
+            {heroProduct ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                className="aspect-[4/5] relative group"
+              >
+                <div className="absolute inset-0 bg-accent/5 -translate-x-6 translate-y-6 transition-transform group-hover:-translate-x-4 group-hover:translate-y-4 duration-700" />
+                <img 
+                  src={heroProduct.images[0] || 'https://via.placeholder.com/600x800?text=Atelier+Piece'} 
+                  alt="Editorial Highlight" 
+                  className="w-full h-full object-cover relative z-10 filter grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
+                />
+                <div className="absolute bottom-12 -right-12 z-20 bg-surface px-8 py-6 luxury-border md:block hidden">
+                  <span className="font-label-md text-accent block mb-2">Highlight Piece</span>
+                  <h3 className="font-serif text-2xl italic">{heroProduct.name}</h3>
+                  <div className="luxury-line my-4" />
+                  <span className="font-label-md tracking-tighter text-primary">₦{heroProduct.price.toLocaleString()}</span>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="aspect-[4/5] bg-primary/5 luxury-border flex items-center justify-center italic font-serif text-secondary text-xl">
+                Archival silence.
               </div>
-            </motion.div>
+            )}
           </div>
         </div>
       </section>

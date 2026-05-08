@@ -19,7 +19,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} className="flex flex-col h-full space-y-6">
         <div className="aspect-[3/4] overflow-hidden bg-background relative luxury-border">
           <img
-            src={product.images[0]}
+            src={product.images[0] || 'https://via.placeholder.com/400x500?text=No+Image'}
             alt={product.name}
             className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
           />
