@@ -90,6 +90,9 @@ export const Admin: React.FC = () => {
     if (!error) {
       document.documentElement.style.setProperty('--primary-color', siteSettings.primaryColor);
       document.documentElement.style.setProperty('--accent-color', siteSettings.accentColor);
+      localStorage.setItem('brandName', siteSettings.brandName);
+      localStorage.setItem('primaryColor', siteSettings.primaryColor);
+      localStorage.setItem('accentColor', siteSettings.accentColor);
       alert('Studio configuration synchronized with Supabase.');
     } else {
       alert('Error syncing settings: ' + error.message);

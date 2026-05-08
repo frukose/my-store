@@ -34,8 +34,9 @@ export const ProductDetail: React.FC = () => {
 
   const handleWhatsAppInquiry = () => {
     const phoneNumber = "2347030195046";
+    const brandName = localStorage.getItem('brandName') || 'aystores';
     const message = encodeURIComponent(
-      `Hello AYSTORES, I'm interested in the ${product.name}${selectedSize ? ` (${selectedSize})` : ''}. Could you provide more details?`
+      `Hello ${brandName.toUpperCase()}, I'm interested in the ${product.name}${selectedSize ? ` (${selectedSize})` : ''}. Could you provide more details?`
     );
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
