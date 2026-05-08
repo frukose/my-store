@@ -94,9 +94,11 @@ BEGIN
         CREATE POLICY "Allow public read of products" ON products FOR SELECT USING (true);
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow admin write of products') THEN
-        CREATE POLICY "Allow admin write of products" ON products FOR ALL USING (true); -- Simplified for this setup
+        CREATE POLICY "Allow admin write of products" ON products FOR ALL USING (true) WITH CHECK (true);
     END IF;
 END $$;
 
--- 7. Force Schema Cache Reload (Hint for PostgREST)
+-- 7. Force Schema Cache Reload
+-- This helps if columns were recently added and aren't visible to the API yet
 NOTIFY pgrst, 'reload schema';
+ALTER TABLE products REPLICA IDENTITY FULL; 

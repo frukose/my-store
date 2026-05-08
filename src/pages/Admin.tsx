@@ -87,13 +87,14 @@ export const Admin: React.FC = () => {
       stock_level: p.stockCount || 10
     }));
 
-    const { error } = await supabase.from('products').upsert(productsToSeed);
-    if (!error) {
+    const { error: seedError } = await supabase.from('products').upsert(productsToSeed);
+    if (!seedError) {
       const { data } = await supabase.from('products').select('*');
       if (data) setDbProducts(data);
       alert('Archive seeded successfully.');
     } else {
-      alert('Seed error: ' + error.message);
+      console.error('Seed Error:', seedError);
+      alert(`Seed error: ${seedError.message}\nHint: ${seedError.hint || 'N/A'}`);
     }
     setIsLoading(false);
   };
@@ -103,16 +104,27 @@ export const Admin: React.FC = () => {
     setIsLoading(true);
     
     // Generate a reference ID if none provided
-    const productId = newProduct.id || `PIECE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    const productId = (newProduct.id || `PIECE-${Math.random().toString(36).substr(2, 9).toUpperCase()}`).trim();
     
-    const { error } = await supabase.from('products').insert([{
-      ...newProduct,
-      id: productId,
-      price: newProduct.price.toString(),
-    }]);
+    // Ensure all images are valid URLs and remove empty ones
+    const cleanImages = newProduct.images.filter(img => img.trim() !== '');
 
-    if (!error) {
-      alert('New archival piece added.');
+    // Explicitly map fields to match database columns exactly
+    const productData = {
+      id: productId,
+      name: newProduct.name,
+      price: newProduct.price.toString(),
+      category: newProduct.category,
+      description: newProduct.description,
+      images: cleanImages,
+      sizes: newProduct.sizes,
+      stock_level: parseInt(newProduct.stock_level.toString()) || 0
+    };
+
+    const { error: insertError } = await supabase.from('products').insert([productData]);
+
+    if (!insertError) {
+      alert('New archival piece added to the collection.');
       setShowAddModal(false);
       setNewProduct({
         id: '',
@@ -126,7 +138,8 @@ export const Admin: React.FC = () => {
       });
       fetchProducts();
     } else {
-      alert('Error adding piece: ' + error.message);
+      console.error('Supabase Insert Error:', insertError);
+      alert(`Error recording piece: ${insertError.message}\n\nHint: ${insertError.hint || 'Check if all fields are valid'}\nDetails: ${insertError.details || 'None'}`);
     }
     setIsLoading(false);
   };
