@@ -127,37 +127,7 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Pieces Grid */}
-      <section className="px-6 md:px-12 max-w-[1700px] mx-auto pt-24 md:pt-40">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 gap-8">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-               <div className="w-8 h-px bg-on-background/20" />
-               <span className="font-label-md text-secondary lowercase">Selected Objects</span>
-            </div>
-            <h2 className="font-display-md text-5xl md:text-7xl">Seasonal Edits</h2>
-          </div>
-          <Link to="/shop" className="font-label-md text-accent flex items-center gap-3 group">
-            View full showroom
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-          {features.map((product, idx) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              viewport={{ once: true, margin: "-100px" }}
-              className={cn(idx === 1 && "md:translate-y-20")}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* Featured Pieces Grid Removed - No products in showroom requested */}
 
       {/* Philosophy Block */}
       <section className="relative overflow-hidden pt-40 pb-20">

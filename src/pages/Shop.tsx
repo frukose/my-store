@@ -13,6 +13,7 @@ export const Shop: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -75,17 +76,41 @@ export const Shop: React.FC = () => {
           </div>
           
           <div className="flex gap-4 w-full md:w-auto relative">
-            <button 
-              onClick={() => {
-                // For now, toggle category reset as a "filter" clear
-                if (categoryFilter) setSearchParams({});
-                else alert('Filters are contextually applied via categories in the navigation.');
-              }}
-              className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group rounded-full"
-            >
-              <SlidersHorizontal className="w-4 h-4 opacity-40 group-hover:opacity-100" />
-              {categoryFilter ? 'Clear Filter' : 'Filter'}
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  if (categoryFilter) setSearchParams({});
+                  else setShowFilterDropdown(!showFilterDropdown);
+                }}
+                className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group rounded-full"
+              >
+                <SlidersHorizontal className="w-4 h-4 opacity-40 group-hover:opacity-100" />
+                {categoryFilter ? 'Clear Filter' : 'Filter'}
+              </button>
+              
+              {showFilterDropdown && !categoryFilter && (
+                <div className="absolute left-0 top-full mt-2 w-48 bg-white luxury-border z-50 shadow-xl overflow-hidden">
+                  <button 
+                    onClick={() => { setSearchParams({ category: 'clothes' }); setShowFilterDropdown(false); }}
+                    className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors border-b luxury-border"
+                  >
+                    Clothes
+                  </button>
+                  <button 
+                    onClick={() => { setSearchParams({ category: 'shoes' }); setShowFilterDropdown(false); }}
+                    className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors border-b luxury-border"
+                  >
+                    Shoes
+                  </button>
+                  <button 
+                    onClick={() => { setSearchParams({ category: 'accessories' }); setShowFilterDropdown(false); }}
+                    className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors"
+                  >
+                    Accessories
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="relative">
               <button 
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
@@ -126,7 +151,7 @@ export const Shop: React.FC = () => {
       </section>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-20">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 md:gap-x-12 gap-y-12 md:gap-y-20">
         {filteredProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
