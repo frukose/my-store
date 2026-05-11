@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ProductCard } from '../components/ProductCard';
-import { ChevronDown, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { ChevronDown, SlidersHorizontal, Loader2, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 import { cn } from '../lib/utils';
@@ -14,6 +14,11 @@ export const Shop: React.FC = () => {
   const [sortBy, setSortBy] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+
+  useEffect(() => {
+    setSearchQuery(searchParams.get('q') || '');
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,7 +51,13 @@ export const Shop: React.FC = () => {
   }, []);
   
   const filteredProducts = products
-    .filter(p => !categoryFilter || p.category === categoryFilter)
+    .filter(p => {
+      const matchesCategory = !categoryFilter || p.category === categoryFilter;
+      const matchesSearch = !searchQuery || 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
     .sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price;
       if (sortBy === 'price-desc') return b.price - a.price;
@@ -75,39 +86,74 @@ export const Shop: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex gap-4 w-full md:w-auto relative">
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-1/2 relative">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary opacity-40 group-focus-within:opacity-100 transition-opacity" />
+              <input
+                type="text"
+                placeholder="Search collection..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchParams(prev => {
+                    if (e.target.value) prev.set('q', e.target.value);
+                    else prev.delete('q');
+                    return prev;
+                  }, { replace: true });
+                }}
+                className="w-full pl-14 pr-8 py-4 bg-background/50 luxury-border font-label-md text-[10px] outline-none focus:border-primary transition-all rounded-full"
+              />
+            </div>
+            
             <div className="relative">
               <button 
-                onClick={() => {
-                  if (categoryFilter) setSearchParams({});
-                  else setShowFilterDropdown(!showFilterDropdown);
-                }}
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                 className="flex items-center gap-3 px-8 py-4 luxury-border font-label-md text-[10px] hover:bg-primary hover:text-white transition-all group rounded-full"
               >
                 <SlidersHorizontal className="w-4 h-4 opacity-40 group-hover:opacity-100" />
-                {categoryFilter ? 'Clear Filter' : 'Filter'}
+                {categoryFilter ? `Filter: ${categoryFilter}` : 'Filter'}
               </button>
               
-              {showFilterDropdown && !categoryFilter && (
+              {showFilterDropdown && (
                 <div className="absolute left-0 top-full mt-2 w-48 bg-white luxury-border z-50 shadow-xl overflow-hidden">
                   <button 
-                    onClick={() => { setSearchParams({ category: 'clothes' }); setShowFilterDropdown(false); }}
+                    onClick={() => { 
+                      setSearchParams(prev => { prev.set('category', 'clothes'); return prev; }); 
+                      setShowFilterDropdown(false); 
+                    }}
                     className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors border-b luxury-border"
                   >
                     Clothes
                   </button>
                   <button 
-                    onClick={() => { setSearchParams({ category: 'shoes' }); setShowFilterDropdown(false); }}
+                    onClick={() => { 
+                      setSearchParams(prev => { prev.set('category', 'shoes'); return prev; }); 
+                      setShowFilterDropdown(false); 
+                    }}
                     className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors border-b luxury-border"
                   >
                     Shoes
                   </button>
                   <button 
-                    onClick={() => { setSearchParams({ category: 'accessories' }); setShowFilterDropdown(false); }}
+                    onClick={() => { 
+                      setSearchParams(prev => { prev.set('category', 'accessories'); return prev; }); 
+                      setShowFilterDropdown(false); 
+                    }}
                     className="w-full px-6 py-4 text-left font-label-md text-[10px] hover:bg-background transition-colors"
                   >
                     Accessories
                   </button>
+                  {categoryFilter && (
+                    <button 
+                      onClick={() => { 
+                        setSearchParams(prev => { prev.delete('category'); return prev; }); 
+                        setShowFilterDropdown(false); 
+                      }}
+                      className="w-full px-6 py-4 text-left font-label-md text-[10px] bg-accent/5 text-accent hover:bg-accent hover:text-white transition-colors border-t"
+                    >
+                      Clear Selection
+                    </button>
+                  )}
                 </div>
               )}
             </div>

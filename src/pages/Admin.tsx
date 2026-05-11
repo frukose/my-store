@@ -26,6 +26,7 @@ export const Admin: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [dbActivities, setDbActivities] = useState<any[]>([]);
   const [dbProducts, setDbProducts] = useState<any[]>([]);
+  const [inventorySearch, setInventorySearch] = useState('');
 
   const [siteSettings, setSiteSettings] = useState({
     brandName: 'aystores',
@@ -644,6 +645,8 @@ export const Admin: React.FC = () => {
                       className="w-full bg-white luxury-border px-12 py-4 text-[10px] font-label-md uppercase outline-none focus:border-accent transition-all" 
                       placeholder="Search Collection..." 
                       type="text" 
+                      value={inventorySearch}
+                      onChange={(e) => setInventorySearch(e.target.value)}
                     />
                   </div>
                   <div className="flex gap-2">
@@ -684,7 +687,14 @@ export const Admin: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-on-background/5 font-sans">
-                    {dbProducts.map((product) => (
+                    {dbProducts
+                      .filter(p => 
+                        !inventorySearch || 
+                        p.name.toLowerCase().includes(inventorySearch.toLowerCase()) || 
+                        p.id.toLowerCase().includes(inventorySearch.toLowerCase()) ||
+                        (typeof p.category === 'string' && p.category.toLowerCase().includes(inventorySearch.toLowerCase()))
+                      )
+                      .map((product) => (
                       <tr key={product.id} className={cn(
                         "hover:bg-background/40 transition-colors group",
                         selectedItems.includes(product.id) && "bg-primary/5"

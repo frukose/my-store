@@ -25,10 +25,23 @@ export const Header: React.FC<HeaderProps> = ({ brandName = 'aystores' }) => {
         </div>
         
         <div className="flex gap-8 items-center">
-          <div className="flex items-center gap-2 group cursor-pointer">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const q = formData.get('q') as string;
+              if (q) window.location.href = `/shop?q=${encodeURIComponent(q)}`;
+            }}
+            className="flex items-center gap-2 group cursor-pointer border-b border-transparent focus-within:border-primary transition-all"
+          >
             <Search className="w-4 h-4 text-secondary group-hover:text-primary transition-colors" />
-            <span className="font-label-md text-secondary group-hover:text-primary transition-colors">Search</span>
-          </div>
+            <input 
+              name="q"
+              type="text"
+              placeholder="Search"
+              className="font-label-md text-secondary bg-transparent outline-none w-20 focus:w-40 transition-all placeholder:text-secondary/40"
+            />
+          </form>
           <Link 
             to="/cart" 
             className="flex items-center gap-3 group"
