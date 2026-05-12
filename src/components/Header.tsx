@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, ShoppingBag, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../lib/CartContext';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ brandName = 'aystores' }) => {
   const { cartCount } = useCart();
+  const navigate = useNavigate();
 
   return (
     <header className="px-6 md:px-12 pt-12 pb-6 shrink-0 max-w-[1700px] mx-auto w-full">
@@ -30,16 +31,24 @@ export const Header: React.FC<HeaderProps> = ({ brandName = 'aystores' }) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
               const q = formData.get('q') as string;
-              if (q) window.location.href = `/shop?q=${encodeURIComponent(q)}`;
+              if (q?.trim()) {
+                navigate(`/shop?q=${encodeURIComponent(q.trim())}`);
+                e.currentTarget.reset();
+              } else {
+                navigate('/shop');
+              }
             }}
-            className="flex items-center gap-2 group cursor-pointer border-b border-transparent focus-within:border-primary transition-all"
+            className="flex items-center gap-2 group cursor-pointer border-b border-on-background/10 focus-within:border-primary transition-all pb-1 h-8"
           >
-            <Search className="w-4 h-4 text-secondary group-hover:text-primary transition-colors" />
+            <button type="submit" className="focus:outline-none hover:text-primary transition-colors">
+              <Search className="w-4 h-4 text-secondary group-focus-within:text-primary" />
+            </button>
             <input 
               name="q"
               type="text"
-              placeholder="Search"
-              className="font-label-md text-secondary bg-transparent outline-none w-20 focus:w-40 transition-all placeholder:text-secondary/40"
+              placeholder="Search Objects..."
+              autoComplete="off"
+              className="font-label-md text-secondary bg-transparent outline-none w-28 sm:w-40 md:w-56 focus:w-64 transition-all placeholder:text-secondary/30 text-[11px] uppercase tracking-widest"
             />
           </form>
           <Link 
