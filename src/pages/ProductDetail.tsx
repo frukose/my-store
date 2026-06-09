@@ -250,7 +250,7 @@ export const ProductDetail: React.FC = () => {
             <h3 className="font-display-md text-5xl italic">Complete the Silhouette</h3>
             <div className="w-12 h-px bg-primary/20 mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 sm:gap-x-12 gap-y-8 sm:gap-y-20">
             {relatedItems.slice(0, 4).map((item) => (
               <ProductCard key={item.id} product={item} />
             ))}

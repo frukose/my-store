@@ -44,18 +44,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           )}
         </div>
         
-        <div className="flex flex-col space-y-4 p-6">
-          <div className="space-y-1">
-            <span className="font-label-md text-[9px] text-secondary lowercase italic opacity-60 tracking-widest">
+        <div className="flex flex-col space-y-2 sm:space-y-4 p-3 sm:p-6">
+          <div className="space-y-0.5 sm:space-y-1">
+            <span className="font-label-md text-[8px] sm:text-[9px] text-secondary lowercase italic opacity-60 tracking-widest">
               {typeof product.category === 'object' ? (product.category as any)?.name || 'Shop Object' : product.category}
             </span>
-            <h3 className="font-serif text-2xl italic tracking-tight text-primary group-hover:text-accent transition-colors">{product.name}</h3>
+            <h3 className="font-serif text-sm sm:text-2xl italic tracking-tight text-primary group-hover:text-accent transition-colors line-clamp-1 sm:line-clamp-none">{product.name}</h3>
           </div>
           
           <div className="flex justify-between items-end">
-            <span className="font-sans text-lg font-light tracking-tight">₦{product.price.toLocaleString()}</span>
-            <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all overflow-hidden relative">
-              <ArrowUpRight className="w-4 h-4" />
+            <span className="font-sans text-xs sm:text-lg font-light tracking-tight">₦{product.price.toLocaleString()}</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full border border-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all overflow-hidden relative shrink-0">
+              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
         </div>

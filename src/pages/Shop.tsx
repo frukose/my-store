@@ -395,10 +395,10 @@ export const Shop: React.FC = () => {
 
         {/* Dynamic Responsive Interactive Showroom Grid */}
         <div className={cn(
-          "grid gap-x-6 gap-y-16 transition-all duration-700 ease-in-out",
+          "grid transition-all duration-700 ease-in-out gap-3 sm:gap-6",
           gridMode === 'split'
-            ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            : "grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-y-24"
+            ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-y-8 sm:gap-y-16"
+            : "grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-y-10 sm:gap-y-24"
         )}>
           {filteredProducts.map((p, idx) => {
             const isBentoTall = gridMode === 'bento' && (idx % 3 === 0);
@@ -411,12 +411,12 @@ export const Shop: React.FC = () => {
                   "group flex flex-col h-full rounded-[var(--radius-luxury)] overflow-hidden transition-all duration-500",
                   activeTheme.cardBgClass,
                   activeTheme.borderColor,
-                  "border p-4 hover:shadow-2xl hover:translate-y-[-4px]",
+                  "border p-2 sm:p-4 hover:shadow-2xl hover:translate-y-[-4px]",
                   isBentoTall && "md:col-span-1 md:row-span-2 aspect-[3/5]"
                 )}
               >
                 {/* Media frame */}
-                <div className="aspect-[3/4] relative w-full overflow-hidden bg-background luxury-border rounded-2xl group">
+                <div className="aspect-[3/4] relative w-full overflow-hidden bg-background luxury-border rounded-xl sm:rounded-2xl group">
                   <Link to={`/product/${p.id}`} className="block w-full h-full">
                     <img 
                       src={p.images[0] || 'https://via.placeholder.com/400x500?text=Atelier+Piece'} 
@@ -434,39 +434,39 @@ export const Shop: React.FC = () => {
                   </Link>
 
                   {/* Badges Overlay */}
-                  <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none z-10">
-                    <span className="bg-background/90 backdrop-blur-md text-primary font-label-md text-[8px] px-3.5 py-1.5 rounded-full border border-on-background/5">
+                  <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex flex-col gap-2 pointer-events-none z-10">
+                    <span className="bg-background/90 backdrop-blur-md text-primary font-label-md text-[7px] sm:text-[8px] px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-on-background/5">
                       {p.category}
                     </span>
                   </div>
 
                   {/* Hover Quick actions overlay */}
-                  <div className="absolute inset-x-4 bottom-4 flex justify-between items-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute inset-x-2 sm:inset-x-4 bottom-2 sm:bottom-4 flex justify-between items-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <button
                       onClick={() => setInspectedProduct(p)}
-                      className="bg-black/95 hover:bg-accent text-white backdrop-blur-md p-3 rounded-full shadow-lg transition-all transform hover:scale-110"
+                      className="bg-black/95 hover:bg-accent text-white backdrop-blur-md p-2.5 sm:p-3 rounded-full shadow-lg transition-all transform hover:scale-110"
                       title="View Blueprint Specs"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                     
                     <button
                       onClick={(e) => handleInstantQuickAdd(p, e)}
                       disabled={cartAddingId === p.id}
                       className={cn(
-                        "bg-white text-black hover:bg-black hover:text-white px-5 py-3 rounded-full text-[9px] font-label-md shadow-lg transition-all transform hover:scale-105 flex items-center gap-2",
+                        "bg-white text-black hover:bg-black hover:text-white px-3 sm:px-5 py-2 sm:py-3 rounded-full text-[8px] sm:text-[9px] font-label-md shadow-lg transition-all transform hover:scale-105 flex items-center gap-1.5",
                         successAnimationId === p.id && "bg-[#52B788] text-white border-[#52B788]"
                       )}
                     >
                       {cartAddingId === p.id ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
                       ) : successAnimationId === p.id ? (
                         <>
-                          <Check className="w-3 h-3" /> Add Successful
+                          <Check className="w-2.5 h-2.5" /> Added
                         </>
                       ) : (
                         <>
-                          <Plus className="w-3 h-3" /> Quick Bag
+                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> Quick Bag
                         </>
                       )}
                     </button>
@@ -474,36 +474,36 @@ export const Shop: React.FC = () => {
                 </div>
 
                 {/* Info block */}
-                <div className="flex flex-col flex-1 pt-6 px-2 justify-between">
+                <div className="flex flex-col flex-1 pt-3 sm:pt-6 px-1 sm:px-2 justify-between">
                   <div>
-                    <span className="font-caption lowercase text-[9px] mb-2 block opacity-50">
+                    <span className="font-caption lowercase text-[8px] sm:text-[9px] mb-1 sm:mb-2 block opacity-50">
                       {p.sku}
                     </span>
                     
                     <Link to={`/product/${p.id}`}>
-                      <h3 className="font-serif italic text-2xl tracking-tight leading-snug group-hover:text-accent transition-colors">
+                      <h3 className="font-serif italic text-sm sm:text-2xl tracking-tight leading-snug group-hover:text-accent transition-colors line-clamp-1 sm:line-clamp-none">
                         {p.name}
                       </h3>
                     </Link>
 
-                    <p className="font-sans text-xs tracking-wide opacity-70 mt-2 line-clamp-2 leading-relaxed">
+                    <p className="font-sans text-[10px] sm:text-xs tracking-wide opacity-70 mt-1 sm:mt-2 line-clamp-2 leading-relaxed hidden sm:block">
                       {p.description}
                     </p>
                   </div>
 
-                  <div className="pt-6 flex justify-between items-end border-t border-dashed border-on-background/5 mt-4">
+                  <div className="pt-3 sm:pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-end border-t border-dashed border-on-background/5 mt-3 sm:mt-4 gap-2 sm:gap-0">
                     <div className="space-y-0.5">
-                      <span className="font-label-md text-[8px] opacity-40 block uppercase">Est. Investment:</span>
-                      <span className="font-sans text-lg font-light tracking-tight block">
+                      <span className="font-label-md text-[7px] sm:text-[8px] opacity-40 block uppercase">Est. Investment:</span>
+                      <span className="font-sans text-xs sm:text-lg font-light tracking-tight block">
                         ₦{p.price.toLocaleString()}
                       </span>
                     </div>
 
                     <button
                       onClick={() => setInspectedProduct(p)}
-                      className="font-label-md text-[8px] tracking-widest text-[#C5A059] border-b border-accent/20 pb-0.5 hover:border-accent hover:text-primary transition-all flex items-center gap-1.5"
+                      className="font-label-md text-[7px] sm:text-[8px] tracking-widest text-[#C5A059] border-b border-accent/20 pb-0.5 hover:border-accent hover:text-primary transition-all flex items-center gap-1"
                     >
-                      <Info className="w-3 h-3" /> View Specs
+                      <Info className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> View Specs
                     </button>
                   </div>
                 </div>
